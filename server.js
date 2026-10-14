@@ -31,7 +31,7 @@ function startGame(rm){
  vm.runInContext('Object.assign(cfg,'+JSON.stringify(rm.cfg)+');HUM='+hum+';NS='+ns+';NM='+JSON.stringify(names)+';start();started=true',ctx);
  rm.ps.forEach((p,i)=>{p.si=i;send(p.ws,{t:'start',me:i,hum,ns,cfg:rm.cfg,names})});
  let n=0;const g=rm.game={ctx};
- g.timer=setInterval(()=>{try{ctx.update(.05);if(++n%2==0||vm.runInContext('over',ctx)){bc(rm,{t:'snap',d:ctx.SNAP()});if(vm.runInContext('over',ctx)){clearInterval(g.timer);rm.game=null;rm.ps.forEach(p=>p.si=null)}}}
+ g.timer=setInterval(()=>{try{ctx.update(.05);{n++;bc(rm,{t:'snap',n,d:ctx.SNAP()});if(vm.runInContext('over',ctx)){clearInterval(g.timer);rm.game=null;rm.ps.forEach(p=>p.si=null)}}}
   catch(e){console.error(e);clearInterval(g.timer);rm.game=null;bc(rm,{t:'sys',text:'Game crashed on the server'})}},50)}
 wss.on('connection',ws=>{
  const p={id:nid++,name:'Captain',ws,room:null,last:0};ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);

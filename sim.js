@@ -276,5 +276,5 @@ function CMD(si,m){const s=G.sh[si];if(!s||s.dead)return '';P=s;sel=s.pr[m.pi]||
 function INP(si,k){const s=G.sh[si];if(s)s.in={w:!!k.w,a:!!k.a,s:!!k.s,d:!!k.d}}
 function AIOF(si){const s=G.sh[si];if(s){s.ai=true;s.in={}}}
 function SNAP(){const r=v=>Math.round(v*10)/10;return JSON.stringify({o:over,k:G.clock,cs:G.cs,sc:G.sc,
- s:G.sh.map(s=>[r(s.x),r(s.y),Math.round(s.h*1000)/1000,r(s.thr),r(s.v||0),Math.round(s.water),r(s.sink),s.dead?1:0,s.lives,s.gold|0,s.k|0,s.cp,s.lap,s.md.ld?1:0,s.md.mn,s.nest?1:0,s.holes.map(h=>[r(h.x),r(h.y)]),s.cn.map(k=>(k.ld?1:0)+(k.man?2:0)),s.oars.map(o=>o.man?1:0),s.pr.map(p=>[r(p.x),r(p.y),p.job||'',p.carry?1:0])]),
- p:G.pj.map(p=>[r(p.x),r(p.y)]),m:G.mn.map(m=>[r(m.x),r(m.y),m.arm>0?1:0,G.sh.indexOf(m.o)]),c:G.ch.map(q=>[r(q.x),r(q.y),q.v|0]),f:G.fx.map(f=>[r(f.x),r(f.y),f.k,r(f.t)])})}
+ s:G.sh.map(s=>[r(s.x),r(s.y),Math.round(s.h*1000)/1000,r(s.thr),r(s.v||0),Math.round(s.water),r(s.sink),s.dead?1:0,s.lives,s.gold|0,s.k|0,s.cp,s.lap,s.md.ld?1:0,s.md.mn,s.nest?1:0,s.holes.map(h=>[r(h.x),r(h.y)]),s.cn.map(k=>(k.ld?1:0)+(k.man?2:0)),s.oars.map(o=>o.man?1:0),s.pr.map(p=>[Math.round(p.x),Math.round(p.y),p.job||'',p.carry?1:0])]),
+ p:G.pj.map(p=>[r(p.x),r(p.y),Math.round(p.vx),Math.round(p.vy)]),m:G.mn.map(m=>[r(m.x),r(m.y),m.arm>0?1:0,G.sh.indexOf(m.o)]),c:G.ch.map(q=>[r(q.x),r(q.y),q.v|0]),f:G.fx.map(f=>[r(f.x),r(f.y),f.k,r(f.t)])})}
