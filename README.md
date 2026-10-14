@@ -1,5 +1,5 @@
-# Pirate Fleet Online (round 1: server + online lobby)
-Rooms, room codes, live chat and shared lobby settings work now. In-game multiplayer sync is the next round.
+# Pirate Fleet Online (round 2a)
+Rooms, chat, shared settings and the host-started online game. The server runs the whole simulation (sim.js); clients send steering and crew commands and draw the snapshots they get back.
 
 ## Run on your computer
 1. Install Node 18+ from nodejs.org

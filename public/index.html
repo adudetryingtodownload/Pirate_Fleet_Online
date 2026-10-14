@@ -46,7 +46,8 @@ button:not(:disabled):hover{background:#6b3f1c}
 <div id="bar" hidden>
 <button data-k="H">? Controls (H)</button>
 <button data-k="C">Man Cannon (C)</button><button data-k="L">Load (L)</button><button data-k="R">Repair (R)</button><button data-k="B">Bail (B)</button><button data-k="N">Crow's Nest (N)</button><button data-k=" ">🔥 Fire (Space)</button><button data-k="M">💣 Mine Crew (M)</button><button data-k="X">Drop Mine (X)</button><button data-k="O">🚣 Oar (O)</button></div>
-<script>
+<script>var HUM=1,NS=0,NM=[],NET=0;const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
+
 const cv=document.getElementById('c'),c=cv.getContext('2d'),$=i=>document.getElementById(i);
 let W,H;function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();onresize=rs;
 const K=.2,WS=2400,HULL=new Path2D('M 120 175 Q 120 130 170 130 L 900 130 C 1100 130 1250 210 1345 300 C 1250 390 1100 470 900 470 L 170 470 Q 120 470 120 425 Z'),
@@ -58,7 +59,7 @@ const rnd=(a,b)=>a+Math.random()*(b-a),ang=a=>Math.atan2(Math.sin(a),Math.cos(a)
 let ISL=[];const GT=[{x:500,y:1200,h:-Math.PI/2},{x:1200,y:500,h:0},{x:1900,y:1200,h:Math.PI/2},{x:1200,y:1900,h:Math.PI}];
 function dock(t){const b=ISL[t],dx=1200-b.x,dy=1200-b.y,d=Math.hypot(dx,dy);return{x:b.x+dx/d*(b.r+75),y:b.y+dy/d*(b.r+75)}}
 function place(s){const f=x=>x.lap*4+x.cp+1-Math.min(1,Math.hypot(x.x-GT[x.cp].x,x.y-GT[x.cp].y)/1000);return G.sh.filter(o=>f(o)>f(s)).length+1}
-function ship(i){const s={i,ai:i>0,col:COLS[cfg.type==3?i%2:i],team:i%2,cp:0,lap:0,lives:[cfg.lives,99,cfg.lives,99][cfg.type],gold:cfg.type==1?1000:0,rt:0,dead:false};spawn(s);return s}
+function ship(i){const s={i,ai:i>=HUM,in:{},col:COLS[cfg.type==3?i%2:i],team:i%2,cp:0,lap:0,lives:[cfg.lives,99,cfg.lives,99][cfg.type],gold:cfg.type==1?1000:0,rt:0,dead:false};spawn(s);return s}
 function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300],[1200,2100],[300,1200],[2100,1200]][s.i];
  s.x=q[0]+rnd(-80,80);s.y=q[1]+rnd(-80,80);s.h=Math.atan2(1200-s.y,1200-s.x);
  if(cfg.type==2){if(!s.cp&&!s.lap){s.x=1330+(s.i%2)*300;s.y=1640+Math.floor(s.i/2)*140;s.h=Math.PI}else{const g=GT[(s.cp+3)%4];s.x=g.x+rnd(-60,60);s.y=g.y+rnd(-60,60);s.h=g.h}}
@@ -66,7 +67,7 @@ function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300
  s.oars=[[350,-1,78],[350,1,78],[430,-1,58],[430,1,58]].map(a=>({x:a[0],s:a[1],y:a[1]*a[2],man:null}));s.by=null;s.st='';s.mm=2;s.mc=0;s.md={ld:false,mn:0};s.wp=[];s.thr=0;s.v=0;s.water=0;s.holes=[];s.sink=0;s.nest=false;s.cn=[];s.pr=[];
  for(const d of[-1,1])for(let j=0;j<6;j++)s.cn.push({x:-410+j*100,s:d,man:null,ld:false,t:rnd(6,12)});
  for(let k=0;k<10;k++)s.pr.push({x:-300+(k%5)*120,y:-40+Math.floor(k/5)*80,job:null,pend:null,tg:null,carry:false,w:0,col:PC[k%3],bt:{x:30+(k%3)*50,y:[0,45,-45][k%3]},rs:{x:150+(k%3)*60,y:[-60,0,60][k%3]}})}
-function start(){ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=Math.min(W/330,H/170);bx=by=0;
+function start(){ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=Math.min(W/330,H/170);bx=by=0;
  cam={x:P.x,y:P.y,z:bz,r:-P.h};$('menu').style.display='none';$('lobby').style.display='none';$('bar').hidden=false}
 const cfg={ai:3,diff:3,type:0,slots:1,laps:3,lives:3,mins:5,goal:7000},DN=['','Cabin boy','Sailor','Captain','Commodore','Pirate King'],TN=['Last ship floating','Go for the gold (timed, most gold wins)','Ship race (laps around the island, with cannons)','Team gold (first team to bank the target)'],
 BN=['Red','Green','Gold','Violet','Orange','Teal','Pink'],RP=['Yarr, ye be sinking tonight!','Mind yer stern, mines be about.','Me cannons be hungry.','Fair winds, ye scurvy dog.','See ye at the bottom o the sea!'];
@@ -79,7 +80,7 @@ function lob(){cfg.ai=+$('sA').value;cfg.diff=+$('sD').value;cfg.type=+$('sT').v
 ['sA','sD','sT','sL','sLv','sM','sG'].forEach(i=>$(i).oninput=()=>{lob();sendCfg()});
 $('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob()};
 $('back').onclick=()=>{if(room){tx({t:'leave'});ws.close()}$('lobby').style.display='none';$('menu').style.display='flex'};
-$('play').onclick=()=>{if(room)say('System','Online matches arrive in the next update. Rooms, chat and settings are live now.');else start()};
+$('play').onclick=()=>{if(!room){NET=0;HUM=1;NS=0;start()}else if(room.host==room.you)tx({t:'start'});else say('System','Waiting for the host to start')};
 function send(){const v=$('ci').value.trim();if(!v)return;$('ci').value='';if(room){tx({t:'chat',text:v});return}say('You',v);setTimeout(()=>say(BN[Math.floor(Math.random()*Math.min(cfg.ai,7))]+' captain',RP[Math.floor(Math.random()*RP.length)]),700)}
 $('cs').onclick=send;$('ci').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')send()};
 
@@ -275,13 +276,13 @@ cv.onmousedown=e=>{if(!G||over)return;const w=s2w(e.clientX,e.clientY);
  
  const l=loc(P,w.x,w.y);
  if(e.button==0){const q=nearest(P.pr,l.x,l.y,30);if(q&&bz>1.5)sel=q;else drag={x:e.clientX,y:e.clientY,m:0}}
- else if(e.button==2){if(!sel)return note('Left-click a pirate first');let j=sel.pend;if(!j&&nearest(P.cn.map(k=>({x:k.x,y:k.s*105})),l.x,l.y,70))j='C';if(!j&&Math.hypot(l.x+560,l.y)<90){assignMine(sel);return}const oo=nearest(P.oars,l.x,l.y,60);if(!j&&oo){assignOar(sel,oo);return}let ok=true;
+ else if(e.button==2){if(NET){if(sel)tx({t:'rc',pi:P.pr.indexOf(sel),x:l.x,y:l.y});else note('Left-click a pirate first');return}if(!sel)return note('Left-click a pirate first');let j=sel.pend;if(!j&&nearest(P.cn.map(k=>({x:k.x,y:k.s*105})),l.x,l.y,70))j='C';if(!j&&Math.hypot(l.x+560,l.y)<90){assignMine(sel);return}const oo=nearest(P.oars,l.x,l.y,60);if(!j&&oo){assignOar(sel,oo);return}let ok=true;
   if(j=='C'||j=='L'){const kk=nearest(P.cn.map(k=>({x:k.x,y:k.s*105,k})),l.x,l.y,130);if(kk){free(sel);sel.job=j;sel.tg=kk.k;note(j=='C'?'Pirate going to man the cannon':'Pirate fetching a cannonball')}else{ok=false;note('Right-click closer to a cannon')}}
   else if(j=='R'){const h=nearest(P.holes,l.x,l.y,120);if(h){free(sel);sel.job='R';sel.tg=h;note('Pirate going to repair the hole')}else{ok=false;note('Right-click on a hole')}}
   else{free(sel);if(j=='B'){sel.job='B';sel.tg={x:cp(l.x,540),y:cp(l.y,110)};note('Pirate will bail from here')}else if(j=='N'){sel.job='N'}else{sel.job='M';sel.tg={x:cp(l.x,540),y:cp(l.y,115)}}}
   if(ok)sel.pend=null}};
 function setMode(m){if(m!='map')started=true;mode=m;if(m!='build')sel=null;if(m=='battle')bx=by=0}
-function key(k){if(!G||over)return;k=k.toUpperCase();
+function key(k){if(!G||over)return;k=k.toUpperCase();if(NET&&KS.includes(k)){tx({t:'key',k,pi:P.pr.indexOf(sel)});return}
  if(k=='F')bx=by=0;else if(k=='H')showHelp=!showHelp;else if(k=='TAB'){let n=0;for(const p of P.pr)if(p.job=='C'&&p.tg){const o=P.cn.find(q=>q.x==p.tg.x&&q.s==-p.tg.s);if(o){free(p);p.job='C';p.tg=o;n++}}note(n?'Gun crews switching to the other side':'No gun crews to switch')}
  else if(k==' '){for(const q of P.cn)if(q.man&&q.ld&&P.sink<=0)fire(P,q)}
  else if(k=='X')dropMine(P)
@@ -291,8 +292,8 @@ function key(k){if(!G||over)return;k=k.toUpperCase();
   if(k=='N'||k=='L'||k=='R'||k=='B'){free(sel);sel.job=k;sel.tg=null;sel.pend=null;if(k=='B'){const n=P.pr.filter(q=>q!=sel&&q.job=='B').length;sel.tg={x:30+Math.floor(n/3)*50,y:[0,45,-45][n%3]}}note({N:'Pirate heading to the crows nest',L:'Loader will keep empty cannons stocked',R:'Repairer will patch holes automatically',B:'Pirate heading to mid-ship to bail'}[k])}else{sel.pend=k;note({C:'Now right-click a cannon to man it',L:'Now right-click a cannon to load it',R:'Now right-click a hole to repair it',B:'Now right-click the deck spot to bail from'}[k])}}}
 onkeydown=e=>{if(e.key=='Tab'||e.key==' '||e.key.startsWith('Arrow'))e.preventDefault();
  if(G){if(e.key=='f'||e.key=='F')bx=by=0;const m={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(m){const co=Math.cos(cam.r),si=Math.sin(cam.r),f=80/cam.z;bx=cp(bx+(m[0]*co+m[1]*si)*f,WS);by=cp(by+(-m[0]*si+m[1]*co)*f,WS)}}
- keys[e.key.toLowerCase()]=1;if(!(e.key=='Tab'&&e.repeat))key(e.key)};
-onkeyup=e=>{delete keys[e.key.toLowerCase()]};
+ keys[e.key.toLowerCase()]=1;if(NET)sendIn();if(!(e.key=='Tab'&&e.repeat))key(e.key)};
+onkeyup=e=>{delete keys[e.key.toLowerCase()];if(NET)sendIn()};
 $('bar').onclick=e=>{const k=e.target.dataset.k;if(k!=null)key(k)};
 let ws=null,room=null;const SL=['sA','sD','sT','sL','sLv','sM','sG'],SM={sA:'ai',sD:'diff',sT:'type',sL:'laps',sLv:'lives',sM:'mins',sG:'goal'};
 const tx=o=>{if(ws&&ws.readyState==1)ws.send(JSON.stringify(o))};
@@ -307,10 +308,22 @@ function onNet(m){
   if(!host&&m.cfg)for(const k of SL)if(m.cfg[SM[k]]!=null)$(k).value=m.cfg[SM[k]];
   SL.forEach(i=>$(i).disabled=!host);
   $('ns').textContent='Room '+m.code+(host?' (you are host)':'')+'. Invite link: '+location.origin+'/?room='+m.code;lob()}
- else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
+ else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d);else if(m.t=='note')note(m.text);else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
 $('nm').value='Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
 $('jn').onclick=()=>conn(()=>tx({t:'join',code:$('cd').value,name:$('nm').value}));
 const qr=new URLSearchParams(location.search).get('room');if(qr){$('cd').value=qr.toUpperCase();$('go').onclick()}
-(function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000||0);last=t;if(!G)return;tt-=dt;if(started&&!over)update(dt);camUpd(dt);draw()})(0);
+let lastIn='';
+function sendIn(){const k={w:!!keys.w,a:!!keys.a,s:!!keys.s,d:!!keys.d},j=JSON.stringify(k);if(j!=lastIn){lastIn=j;tx({t:'in',k})}}
+function startNet(m){Object.assign(cfg,m.cfg);HUM=m.hum;NS=m.ns;NM=m.names;NET=1;lastIn='';start();started=true;P=G.sh[m.me];cam={x:P.x,y:P.y,z:bz,r:-P.h};say('System','Game started')}
+function smooth(dt){const k=1-Math.exp(-dt*12);for(const s of G.sh){if(s.tx==null)continue;s.x+=(s.tx-s.x)*k;s.y+=(s.ty-s.y)*k;s.h+=ang(s.th-s.h)*k}}
+function applySnap(d){const S=JSON.parse(d);
+ S.s.forEach((a,i)=>{const s=G.sh[i];if(!s)return;s.tx=a[0];s.ty=a[1];s.th=a[2];if(!s.sx){s.x=a[0];s.y=a[1];s.h=a[2];s.sx=1}
+  s.thr=a[3];s.v=a[4];s.water=a[5];s.sink=a[6];s.dead=!!a[7];s.lives=a[8];s.gold=a[9];s.k=a[10];s.cp=a[11];s.lap=a[12];s.md={ld:!!a[13],mn:a[14]};s.nest=!!a[15];
+  s.holes=a[16].map(h=>({x:h[0],y:h[1]}));a[17].forEach((v,j)=>{s.cn[j].ld=!!(v&1);s.cn[j].man=(v&2)?{}:null});a[18].forEach((v,j)=>{s.oars[j].man=v?{}:null});
+  a[19].forEach((q,j)=>{const p=s.pr[j];if(p){p.x=q[0];p.y=q[1];p.job=q[2]||null;p.carry=!!q[3]}})});
+ G.pj=S.p.map(a=>({x:a[0],y:a[1]}));G.mn=S.m.map(a=>({x:a[0],y:a[1],arm:a[2],o:G.sh[a[3]]}));G.ch=S.c.map(a=>({x:a[0],y:a[1],v:a[2]}));G.fx=S.f.map(a=>({x:a[0],y:a[1],k:a[2],t:a[3]}));
+ G.sc=S.sc;G.cs=S.cs;G.clock=S.k;
+ if(S.o&&!over){over=S.o;$('t').textContent=over;$('menu').style.display='flex';$('bar').hidden=true}}
+(function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000||0);last=t;if(!G)return;tt-=dt;if(NET)smooth(dt);else if(started&&!over)update(dt);camUpd(dt);draw()})(0);
 </script></body></html>
