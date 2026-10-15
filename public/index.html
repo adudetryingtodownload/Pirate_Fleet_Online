@@ -24,6 +24,7 @@ button:not(:disabled):hover{background:#6b3f1c}
 .cr{display:flex;gap:6px;margin-top:6px}.cr input{flex:1;font:inherit;padding:7px;border-radius:8px;border:2px solid var(--gold);background:#1c0f05;color:var(--fg)}
 .btns{display:flex;justify-content:space-between;margin-top:14px}
 #plist{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}
+#gchat{position:fixed;left:12px;bottom:calc(112px + env(safe-area-inset-bottom,0px));width:min(380px,60%);z-index:5}#gl{font-size:13px;line-height:1.4;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none}#gl div{background:rgba(0,0,0,.35);padding:1px 6px;margin-top:2px;border-radius:4px}#gi{width:100%;box-sizing:border-box;margin-top:4px;font:inherit;padding:6px;border-radius:8px;border:2px solid var(--gold);background:#1c0f05;color:var(--fg)}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="menu"><h1>☠ Pirate Fleet</h1><div id="t" style="font-size:22px"></div>
@@ -33,7 +34,7 @@ button:not(:disabled):hover{background:#6b3f1c}
 <p><b>Sail:</b> W/S throttle, A/D turn. <b>Crew:</b> left-click a pirate, then right-click a cannon to man it. Press L to auto-load, R to auto-repair, B to bail, N for the crow's nest, and Tab to swap the gun crews to the other side. <b>Mines:</b> press M on three pirates (or right-click the stern dropper): the first two man it, the third loads it. Then press X to drop a mine behind you. <b>Oars:</b> press O on a pirate (or right-click an oar seat near the bow); each manned oar adds speed. <b>Wheel</b> zooms, drag or arrow keys look around. <b>Space</b> fires every manned, loaded cannon. 1000 gal sinks you; last ship afloat wins.</p></div>
 <div id="lobby"><div class="panel"><h2>⚓ Lobby</h2>
 <div class="row"><div class="cr"><input id="nm" placeholder="Your name" maxlength="16"><button id="mk">Create room</button></div><div class="cr"><input id="cd" placeholder="Room code" maxlength="4"><button id="jn">Join</button></div><div id="ns" style="font-size:13px;margin-top:6px"></div></div>
-<div class="row"><label>AI opponents: <b id="vA">3</b></label><input type="range" id="sA" min="1" max="7" value="3"></div>
+<div class="row"><label>AI opponents: <b id="vA">3</b></label><input type="range" id="sA" min="0" max="7" value="3"></div>
 <div class="row"><label>Difficulty: <b id="vD"></b></label><input type="range" id="sD" min="1" max="5" value="3"></div>
 <div class="row"><label>Game type: <b id="vT"></b></label><input type="range" id="sT" min="0" max="3" value="0"></div>
 <div class="row" id="rL"><label>Race laps: <b id="vL">3</b></label><input type="range" id="sL" min="3" max="6" value="3"></div>
@@ -43,10 +44,11 @@ button:not(:disabled):hover{background:#6b3f1c}
 <div class="row"><label>Players in game</label><div id="plist"></div></div>
 <div id="log"></div><div class="cr"><input id="ci" placeholder="Chat with the crew..." maxlength="120"><button id="cs">Send</button></div>
 <div class="btns"><button id="back">Back</button><button id="play">Set Sail!</button></div></div></div>
+<div id="gchat" hidden><div id="gl"></div><input id="gi" maxlength="120" placeholder="Enter sends, Esc closes" hidden></div>
 <div id="bar" hidden>
-<button data-k="H">? Controls (H)</button>
+<button data-k="H">? Controls (H)</button><button data-k="T">💬 Chat (T)</button>
 <button data-k="C">Man Cannon (C)</button><button data-k="L">Load (L)</button><button data-k="R">Repair (R)</button><button data-k="B">Bail (B)</button><button data-k="N">Crow's Nest (N)</button><button data-k=" ">🔥 Fire (Space)</button><button data-k="M">💣 Mine Crew (M)</button><button data-k="X">Drop Mine (X)</button><button data-k="O">🚣 Oar (O)</button></div>
-<script>var HUM=1,NS=0,NM=[],NET=0;const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
+<script>var HUM=1,NS=0,NM=[],NET=0,TEAMS=[];const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
 
 const cv=document.getElementById('c'),c=cv.getContext('2d'),$=i=>document.getElementById(i);
 let W,H;function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();onresize=rs;
@@ -59,7 +61,7 @@ const rnd=(a,b)=>a+Math.random()*(b-a),ang=a=>Math.atan2(Math.sin(a),Math.cos(a)
 let ISL=[];const GT=[{x:500,y:1200,h:-Math.PI/2},{x:1200,y:500,h:0},{x:1900,y:1200,h:Math.PI/2},{x:1200,y:1900,h:Math.PI}];
 function dock(t){const b=ISL[t],dx=1200-b.x,dy=1200-b.y,d=Math.hypot(dx,dy);return{x:b.x+dx/d*(b.r+75),y:b.y+dy/d*(b.r+75)}}
 function place(s){const f=x=>x.lap*4+x.cp+1-Math.min(1,Math.hypot(x.x-GT[x.cp].x,x.y-GT[x.cp].y)/1000);return G.sh.filter(o=>f(o)>f(s)).length+1}
-function ship(i){const s={i,ai:i>=HUM,in:{},col:COLS[cfg.type==3?i%2:i],team:i%2,cp:0,lap:0,lives:[cfg.lives,99,cfg.lives,99][cfg.type],gold:cfg.type==1?1000:0,rt:0,dead:false};spawn(s);return s}
+function ship(i){const s={i,ai:i>=HUM,in:{},col:COLS[cfg.type==3?(TEAMS[i]!=null?TEAMS[i]:i%2):i],team:TEAMS[i]!=null?TEAMS[i]:i%2,cp:0,lap:0,lives:[cfg.lives,99,cfg.lives,99][cfg.type],gold:cfg.type==1?1000:0,rt:0,dead:false};spawn(s);return s}
 function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300],[1200,2100],[300,1200],[2100,1200]][s.i];
  s.x=q[0]+rnd(-80,80);s.y=q[1]+rnd(-80,80);s.h=Math.atan2(1200-s.y,1200-s.x);
  if(cfg.type==2){if(!s.cp&&!s.lap){s.x=1330+(s.i%2)*300;s.y=1640+Math.floor(s.i/2)*140;s.h=Math.PI}else{const g=GT[(s.cp+3)%4];s.x=g.x+rnd(-60,60);s.y=g.y+rnd(-60,60);s.h=g.h}}
@@ -71,12 +73,17 @@ function start(){ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2
  cam={x:P.x,y:P.y,z:bz,r:-P.h};$('menu').style.display='none';$('lobby').style.display='none';$('bar').hidden=false}
 const cfg={ai:3,diff:3,type:0,slots:1,laps:3,lives:3,mins:5,goal:7000},DN=['','Cabin boy','Sailor','Captain','Commodore','Pirate King'],TN=['Last ship floating','Go for the gold (timed, most gold wins)','Ship race (laps around the island, with cannons)','Team gold (first team to bank the target)'],
 BN=['Red','Green','Gold','Violet','Orange','Teal','Pink'],RP=['Yarr, ye be sinking tonight!','Mind yer stern, mines be about.','Me cannons be hungry.','Fair winds, ye scurvy dog.','See ye at the bottom o the sea!'];
-function say(n,m){const d=document.createElement('div');d.textContent=n+': '+m;$('log').appendChild(d);$('log').scrollTop=1e9}
-function lob(){cfg.ai=+$('sA').value;cfg.diff=+$('sD').value;cfg.type=+$('sT').value;cfg.laps=+$('sL').value;cfg.lives=+$('sLv').value;cfg.mins=+$('sM').value;cfg.goal=+$('sG').value;
+function say(n,m){gmsg(n+': '+m);const d=document.createElement('div');d.textContent=n+': '+m;$('log').appendChild(d);$('log').scrollTop=1e9}
+function lob(){const h0=room?room.players.length:1,mn=h0>=2?0:1;$('sA').min=mn;$('sA').max=Math.max(1,8-h0);if(+$('sA').value<mn)$('sA').value=mn;if(+$('sA').value>8-h0)$('sA').value=Math.max(1,8-h0);cfg.ai=+$('sA').value;cfg.diff=+$('sD').value;cfg.type=+$('sT').value;cfg.laps=+$('sL').value;cfg.lives=+$('sLv').value;cfg.mins=+$('sM').value;cfg.goal=+$('sG').value;
  $('vA').textContent=cfg.ai;$('vD').textContent=DN[cfg.diff];$('vT').textContent=TN[cfg.type];$('vL').textContent=cfg.laps;$('vLv').textContent=cfg.lives;$('vM').textContent=cfg.mins;$('vG').textContent=cfg.goal;
  $('rL').style.display=cfg.type==2?'':'none';$('rLv').style.display=cfg.type==0||cfg.type==2?'':'none';$('rM').style.display=cfg.type==1?'':'none';$('rG').style.display=cfg.type==3?'':'none';
- const pl=$('plist'),pp=room?room.players:[{id:0,name:'You'}],hn=pp.length,an=Math.min(cfg.ai,8-hn);pl.innerHTML='';
- for(let i=0;i<8;i++){const d=document.createElement('div'),h=i<hn,a=!h&&i<hn+an,on=h||a,t=h?pp[i].name+(room&&pp[i].id==room.host?' (host)':'')+(room&&pp[i].id==room.you?' (you)':''):a?'AI captain — '+DN[cfg.diff]:'Open slot';d.style.cssText='display:flex;gap:8px;align-items:center;font-size:13px;opacity:'+(on?1:.45);const sw=document.createElement('span');sw.style.cssText='width:12px;height:12px;border-radius:3px;background:'+(on?COLS[cfg.type==3?i%2:i]:'#555');d.append(sw,'Slot '+(i+1)+': '+t);pl.appendChild(d)}}
+ const pl=$('plist'),pp=room?room.players:[{id:0,name:'You',team:0}],hn=pp.length,an=Math.min(cfg.ai,8-hn);pl.innerHTML='';
+ const mk=(par,txt,col,on,btn)=>{const d=document.createElement('div');d.style.cssText='display:flex;gap:8px;align-items:center;font-size:13px;margin:2px 0;opacity:'+(on?1:.45);const sw=document.createElement('span');sw.style.cssText='width:12px;height:12px;border-radius:3px;background:'+col;d.append(sw,txt);if(btn)d.appendChild(btn);par.appendChild(d)};
+ const nm=p=>p.name+(room&&p.id==room.host?' (host)':'')+(room&&p.id==room.you?' (you)':'');
+ if(cfg.type==3){const cols=[0,1].map(t=>{const c=document.createElement('div'),hd=document.createElement('div');hd.textContent=(t?'Red':'Blue')+' team';hd.style.cssText='font-weight:bold;margin-bottom:4px;color:'+COLS[t];c.appendChild(hd);pl.appendChild(c);return c});
+  pp.forEach(p=>{let b=null;if(room&&p.id==room.you){b=document.createElement('button');b.textContent='⇄ switch';b.style.cssText='font-size:11px;padding:2px 6px;border-width:2px';b.onclick=()=>tx({t:'team',team:p.team?0:1})}mk(cols[p.team|0],nm(p),COLS[p.team|0],1,b)});
+  let ta=pp.filter(p=>!p.team).length,tb=hn-ta;for(let i=0;i<an;i++){const t=ta<=tb?0:1;if(t)tb++;else ta++;mk(cols[t],'AI captain — '+DN[cfg.diff],COLS[t],1)}}
+ else{for(let i=0;i<8;i++){const h=i<hn,a=!h&&i<hn+an;mk(pl,h?nm(pp[i]):a?'AI captain — '+DN[cfg.diff]:'Open slot',h||a?COLS[i]:'#555',h||a)}}}
 ['sA','sD','sT','sL','sLv','sM','sG'].forEach(i=>$(i).oninput=()=>{lob();sendCfg()});
 $('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob()};
 $('back').onclick=()=>{sessionStorage.removeItem('pf');if(room){tx({t:'leave'});ws.close()}$('lobby').style.display='none';$('menu').style.display='flex'};
@@ -256,7 +263,7 @@ function hud(){if(NET){c.fillStyle='rgba(255,255,255,.6)';c.font='11px sans-seri
  const w=P.water/1000;c.fillStyle='#123';c.fillRect(20,20,284,18);c.fillStyle=w>.7?'#e04040':'#3aa0d8';c.fillRect(20,20,284*w,18);
  c.fillStyle='#fff';c.font='13px sans-serif';c.fillText(`Water ${P.water.toFixed(0)} / 1000 gal`,26,34);
  c.fillText(`Holes ${P.holes.length}   ${cfg.type==1?'Gold '+(P.gold|0)+'  Time '+Math.max(0,G.clock|0)+'s':cfg.type==2?'Lap '+Math.min(cfg.laps,P.lap+1)+'/'+cfg.laps+'  Gate '+(P.cp+1)+'/4  Place '+place(P)+'/'+G.sh.length+'  Ships '+P.lives:cfg.type==3?'Carrying '+(P.gold|0)+'  Sunk '+(P.k||0):'Ships left '+P.lives+'  Rivals '+G.sh.filter(s=>s.i&&!s.dead).length}`,20,62);
- const hint='W/S throttle · A/D turn · click pirate, right-click a cannon to man it, L/R/B/N = auto jobs, Tab = swap gun crews to the other side · wheel zoom · drag/arrows look · Space fire';
+ const hint='W/S throttle · A/D turn · click pirate, right-click a cannon to man it, L/R/B/N = auto jobs, Tab = swap gun crews to the other side · wheel zoom · drag/arrows look · Space fire · T chat';
  c.font='15px Georgia';c.textAlign='left';c.fillStyle='#f6e7b8';c.strokeStyle='#000';c.lineWidth=4;const hx=330,hw=Math.max(200,W-hx-200);if(showHelp){c.strokeText(hint,hx,28,hw);c.fillText(hint,hx,28,hw)}
  if(tt>0){c.font='16px Georgia';c.strokeText(toast,hx,52,hw);c.fillText(toast,hx,52,hw)}c.textAlign='center';if(P.sink>0){c.font='bold 36px Georgia';c.strokeText('YOUR SHIP IS SINKING!',W/2,H/2);c.fillText('YOUR SHIP IS SINKING!',W/2,H/2)}c.textAlign='left';
  if(cfg.type==3){c.font='13px sans-serif';[0,1].forEach(t=>{c.fillStyle=COLS[t];c.fillRect(W-190,14+t*18,10,10);c.fillStyle='#fff';c.fillText((t==P.team?'Your team':'Rivals')+'  '+(G.sc[t]|0)+' / '+cfg.goal,W-174,23+t*18)})}
@@ -266,7 +273,7 @@ function hud(){if(NET){c.fillStyle='rgba(255,255,255,.6)';c.font='11px sans-seri
  c.strokeStyle='rgba(255,255,255,.4)';c.lineWidth=1;c.beginPath();c.arc(x0+P.x*m,y0+P.y*m,(P.nest?1500:480)*m,0,7);c.stroke();
  for(const w of P.wp){c.fillStyle='#fff';c.fillRect(x0+w.x*m-2,y0+w.y*m-2,4,4)}
  for(const q of G.ch){c.fillStyle='#ffd24a';c.fillRect(x0+q.x*m-3,y0+q.y*m-3,6,6)}
- for(const s of G.sh){if(s.dead||!vis(s))continue;c.fillStyle=s.col;c.beginPath();c.arc(x0+s.x*m,y0+s.y*m,s==P?5:4,0,7);c.fill();if(s==P){c.strokeStyle='#fff';c.lineWidth=2;c.stroke()}}}
+ for(const s of G.sh){if(s.dead||!vis(s))continue;c.save();c.translate(x0+s.x*m,y0+s.y*m);c.rotate(s.h);c.fillStyle=s.col;c.strokeStyle=s==P?'#fff':'#000';c.lineWidth=s==P?2:1;c.beginPath();c.moveTo(8,0);c.lineTo(-6,-5);c.lineTo(-3,0);c.lineTo(-6,5);c.closePath();c.fill();c.stroke();c.restore()}}
 
 cv.oncontextmenu=e=>e.preventDefault();
 let drag=null,bz=1.05,bx=0,by=0;
@@ -283,7 +290,7 @@ cv.onmousedown=e=>{if(!G||over)return;const w=s2w(e.clientX,e.clientY);
   else{free(sel);if(j=='B'){sel.job='B';sel.tg={x:cp(l.x,540),y:cp(l.y,110)};note('Pirate will bail from here')}else if(j=='N'){sel.job='N'}else{sel.job='M';sel.tg={x:cp(l.x,540),y:cp(l.y,115)}}}
   if(ok)sel.pend=null}};
 function setMode(m){if(m!='map')started=true;mode=m;if(m!='build')sel=null;if(m=='battle')bx=by=0}
-function key(k){if(!G||over)return;k=k.toUpperCase();if(NET&&KS.includes(k)){tx({t:'key',k,pi:P.pr.indexOf(sel)});return}
+function key(k){if(!G||over)return;k=k.toUpperCase();if(k=='T'){openChat();return}if(NET&&KS.includes(k)){tx({t:'key',k,pi:P.pr.indexOf(sel)});return}
  if(k=='F')bx=by=0;else if(k=='H')showHelp=!showHelp;else if(k=='TAB'){let n=0;for(const p of P.pr)if(p.job=='C'&&p.tg){const o=P.cn.find(q=>q.x==p.tg.x&&q.s==-p.tg.s);if(o){free(p);p.job='C';p.tg=o;n++}}note(n?'Gun crews switching to the other side':'No gun crews to switch')}
  else if(k==' '){for(const q of P.cn)if(q.man&&q.ld&&P.sink<=0)fire(P,q)}
  else if(k=='X')dropMine(P)
@@ -291,7 +298,7 @@ function key(k){if(!G||over)return;k=k.toUpperCase();if(NET&&KS.includes(k)){tx(
  else if(k=='O'){if(!sel)return note('Left-click a pirate first');assignOar(sel)}
  else if('CLRBN'.includes(k)){if(!sel)return note('Left-click a pirate first');
   if(k=='N'||k=='L'||k=='R'||k=='B'){free(sel);sel.job=k;sel.tg=null;sel.pend=null;if(k=='B'){const n=P.pr.filter(q=>q!=sel&&q.job=='B').length;sel.tg={x:30+Math.floor(n/3)*50,y:[0,45,-45][n%3]}}note({N:'Pirate heading to the crows nest',L:'Loader will keep empty cannons stocked',R:'Repairer will patch holes automatically',B:'Pirate heading to mid-ship to bail'}[k])}else{sel.pend=k;note({C:'Now right-click a cannon to man it',L:'Now right-click a cannon to load it',R:'Now right-click a hole to repair it',B:'Now right-click the deck spot to bail from'}[k])}}}
-onkeydown=e=>{if(e.key=='Tab'||e.key==' '||e.key.startsWith('Arrow'))e.preventDefault();
+onkeydown=e=>{if(e.key=='Tab'||e.key==' '||e.key.startsWith('Arrow')||(NET&&(e.key=='t'||e.key=='T')))e.preventDefault();
  if(G){if(e.key=='f'||e.key=='F')bx=by=0;const m={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(m){const co=Math.cos(cam.r),si=Math.sin(cam.r),f=80/cam.z;bx=cp(bx+(m[0]*co+m[1]*si)*f,WS);by=cp(by+(-m[0]*si+m[1]*co)*f,WS)}}
  keys[e.key.toLowerCase()]=1;if(NET)sendIn();if(!(e.key=='Tab'&&e.repeat))key(e.key)};
 onkeyup=e=>{delete keys[e.key.toLowerCase()];if(NET)sendIn()};
@@ -308,7 +315,7 @@ function onNet(m){
  if(m.t=='room'){room=m;const host=m.host==m.you;
   if(!host&&m.cfg)for(const k of SL)if(m.cfg[SM[k]]!=null)$(k).value=m.cfg[SM[k]];
   SL.forEach(i=>$(i).disabled=!host);
-  $('ns').textContent='Room '+m.code+(host?' (you are host)':'')+'. Invite link: '+location.origin+'/?room='+m.code;lob()}
+  $('ns').textContent='Room '+m.code+(host?' (you are host)':'')+'. Invite link: '+location.origin+'/?room='+m.code;lob();if(host&&m.cfg&&m.cfg.ai!=null&&cfg.ai!=m.cfg.ai)sendCfg()}
  else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d,m.n);else if(m.t=='note')note(m.text);else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
 $('nm').value='Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
@@ -316,7 +323,7 @@ $('jn').onclick=()=>conn(()=>tx({t:'join',code:$('cd').value,name:$('nm').value}
 const qr=new URLSearchParams(location.search).get('room');if(qr){$('cd').value=qr.toUpperCase();$('go').onclick()}
 let lastIn='';
 function sendIn(){const k={w:!!keys.w,a:!!keys.a,s:!!keys.s,d:!!keys.d},j=JSON.stringify(k);if(j!=lastIn){lastIn=j;tx({t:'in',k})}}
-function startNet(m){Object.assign(cfg,m.cfg);HUM=m.hum;NS=m.ns;NM=m.names;NET=1;lastIn='';buf=[];rt=0;ME=m.me;SP=0;if(room)sessionStorage.setItem('pf',JSON.stringify({code:room.code,tok:room.tok}));start();started=true;P=G.sh[m.me];cam={x:P.x,y:P.y,z:bz,r:-P.h};say('System','Game started')}
+function startNet(m){Object.assign(cfg,m.cfg);HUM=m.hum;NS=m.ns;NM=m.names;NET=1;lastIn='';buf=[];rt=0;ME=m.me;SP=0;TEAMS=m.teams||[];if(room)sessionStorage.setItem('pf',JSON.stringify({code:room.code,tok:room.tok}));start();started=true;P=G.sh[m.me];cam={x:P.x,y:P.y,z:bz,r:-P.h};say('System','Game started')}
 let fc=0,sc=0,fps=0,sps=0,buf=[],rt=0,jit=15,lastA=0,dl=.12,ME=0,SP=0;setInterval(()=>{fps=fc;sps=sc;fc=sc=0},1000);
 function applySnap(d,n){const S=JSON.parse(d);S.t=n*.05;sc++;const nw=performance.now();if(lastA)jit+=(Math.abs(nw-lastA-50)-jit)*.05;lastA=nw;dl=Math.min(.35,.08+3*jit/1000);buf.push(S);if(buf.length>40)buf.shift();
  S.s.forEach((a,i)=>{const s=G.sh[i];if(!s)return;
@@ -330,6 +337,13 @@ function applySnap(d,n){const S=JSON.parse(d);S.t=n*.05;sc++;const nw=performanc
 function rejoin(n){const r=JSON.parse(sessionStorage.getItem('pf')||'null');if(!r||n>20)return;say('System','Reconnecting...');
  conn(()=>tx({t:'rejoin',code:r.code,tok:r.tok,name:$('nm').value}));setTimeout(()=>{if(!(ws&&ws.readyState==1&&room))rejoin(n+1)},3000)}
 if(sessionStorage.getItem('pf')&&!new URLSearchParams(location.search).get('room'))setTimeout(()=>rejoin(18),500);
+const GM=[];let chatOn=0;
+function gmsg(t){GM.push([t,Date.now()]);if(GM.length>30)GM.shift();gr()}
+function gr(){$('gchat').hidden=!(NET&&G&&!over);const n=Date.now(),l=GM.filter(x=>chatOn||n-x[1]<10000).slice(chatOn?-12:-6);$('gl').replaceChildren(...l.map(x=>{const d=document.createElement('div');d.textContent=x[0];return d}))}
+setInterval(gr,1000);
+function openChat(){if(!NET||chatOn)return;chatOn=1;for(const k in keys)delete keys[k];sendIn();$('gi').hidden=false;$('gi').focus();gr()}
+function closeChat(){chatOn=0;$('gi').hidden=true;$('gi').value='';$('gi').blur();gr()}
+$('gi').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter'){const v=$('gi').value.trim();if(v)tx({t:'chat',text:v});closeChat()}else if(e.key=='Escape')closeChat()};
 function interp(dt){const L=buf[buf.length-1];if(!L)return;const tg=L.t-dl;
  if(!rt||Math.abs(rt-tg)>.6)rt=tg;else{rt+=dt;rt+=(tg-rt)*Math.min(1,dt*2)}
  while(buf.length>2&&buf[1].t<=rt)buf.shift();

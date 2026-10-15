@@ -1,4 +1,4 @@
-var HUM=1,NS=0,NM=[],NET=0;const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
+var HUM=1,NS=0,NM=[],NET=0,TEAMS=[];const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
 
 const cv=document.getElementById('c'),c=cv.getContext('2d'),$=i=>document.getElementById(i);
 let W,H;function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();onresize=rs;
@@ -11,7 +11,7 @@ const rnd=(a,b)=>a+Math.random()*(b-a),ang=a=>Math.atan2(Math.sin(a),Math.cos(a)
 let ISL=[];const GT=[{x:500,y:1200,h:-Math.PI/2},{x:1200,y:500,h:0},{x:1900,y:1200,h:Math.PI/2},{x:1200,y:1900,h:Math.PI}];
 function dock(t){const b=ISL[t],dx=1200-b.x,dy=1200-b.y,d=Math.hypot(dx,dy);return{x:b.x+dx/d*(b.r+75),y:b.y+dy/d*(b.r+75)}}
 function place(s){const f=x=>x.lap*4+x.cp+1-Math.min(1,Math.hypot(x.x-GT[x.cp].x,x.y-GT[x.cp].y)/1000);return G.sh.filter(o=>f(o)>f(s)).length+1}
-function ship(i){const s={i,ai:i>=HUM,in:{},col:COLS[cfg.type==3?i%2:i],team:i%2,cp:0,lap:0,lives:[cfg.lives,99,cfg.lives,99][cfg.type],gold:cfg.type==1?1000:0,rt:0,dead:false};spawn(s);return s}
+function ship(i){const s={i,ai:i>=HUM,in:{},col:COLS[cfg.type==3?(TEAMS[i]!=null?TEAMS[i]:i%2):i],team:TEAMS[i]!=null?TEAMS[i]:i%2,cp:0,lap:0,lives:[cfg.lives,99,cfg.lives,99][cfg.type],gold:cfg.type==1?1000:0,rt:0,dead:false};spawn(s);return s}
 function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300],[1200,2100],[300,1200],[2100,1200]][s.i];
  s.x=q[0]+rnd(-80,80);s.y=q[1]+rnd(-80,80);s.h=Math.atan2(1200-s.y,1200-s.x);
  if(cfg.type==2){if(!s.cp&&!s.lap){s.x=1330+(s.i%2)*300;s.y=1640+Math.floor(s.i/2)*140;s.h=Math.PI}else{const g=GT[(s.cp+3)%4];s.x=g.x+rnd(-60,60);s.y=g.y+rnd(-60,60);s.h=g.h}}

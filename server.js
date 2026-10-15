@@ -13,7 +13,7 @@ const mkCode=()=>{let c;do{c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ
 const clean=(s,n)=>String(s||'').replace(/[<>]/g,'').trim().slice(0,n);
 const cf=c=>{const o={};for(const k of['ai','diff','type','laps','lives','mins','goal'])if(Number.isFinite(+(c&&c[k])))o[k]=+c[k];return o};
 const send=(ws,o)=>{if(ws.readyState==1)ws.send(JSON.stringify(o))};
-const snap=(rm,p)=>({t:'room',code:rm.code,you:p.id,tok:p.tok,host:rm.host,cfg:rm.cfg,players:rm.ps.map(x=>({id:x.id,name:x.name}))});
+const snap=(rm,p)=>({t:'room',code:rm.code,you:p.id,tok:p.tok,host:rm.host,cfg:rm.cfg,players:rm.ps.map(x=>({id:x.id,name:x.name,team:x.team|0}))});
 const push=rm=>rm.ps.forEach(p=>send(p.ws,snap(rm,p)));
 const bc=(rm,o)=>rm.ps.forEach(p=>send(p.ws,o));
 function leave(p){const rm=p.room;if(!rm)return;p.room=null;rm.ps=rm.ps.filter(x=>x!==p);if(rm.game&&p.si!=null){rm.game.ctx.AIOF(p.si);rm.dc[p.tok]={si:p.si,name:p.name}}
@@ -25,11 +25,13 @@ const stub=()=>new Proxy(function(){},{get:(t,k)=>k===Symbol.toPrimitive?()=>0:k
 const CN=['Blue','Red','Green','Gold','Violet','Orange','Teal','Pink'],KEYS=['C','L','R','B','N','O','M','X',' ','TAB'];
 function startGame(rm){
  const hum=rm.ps.length,ai=Math.max(hum<2?1:0,Math.min(rm.cfg.ai==null?3:rm.cfg.ai,8-hum)),ns=hum+ai,
-  names=[...rm.ps.map(p=>p.name),...Array.from({length:ai},(_,i)=>'AI '+CN[hum+i])];
+  teams=rm.ps.map(p=>p.team|0);
+ {let a=teams.filter(t=>!t).length,b=teams.length-a;for(let i=0;i<ai;i++){if(a<=b){teams.push(0);a++}else{teams.push(1);b++}}}
+ const names=[...rm.ps.map(p=>p.name),...Array.from({length:ai},(_,i)=>'AI '+(rm.cfg.type==3?CN[teams[hum+i]]+' '+(i+1):CN[hum+i]))];
  const ctx=vm.createContext({document:{getElementById:stub,createElement:stub},innerWidth:1280,innerHeight:720,location:{search:'',protocol:'http:',host:'x',origin:'x'},requestAnimationFrame(){},Path2D:function(){},URLSearchParams,WebSocket:function(){}});
  vm.runInContext(SIM,ctx);
- vm.runInContext('Object.assign(cfg,'+JSON.stringify(rm.cfg)+');HUM='+hum+';NS='+ns+';NM='+JSON.stringify(names)+';start();started=true',ctx);
- rm.ps.forEach((p,i)=>{p.si=i;send(p.ws,{t:'start',me:i,hum,ns,cfg:rm.cfg,names})});
+ vm.runInContext('Object.assign(cfg,'+JSON.stringify(rm.cfg)+');HUM='+hum+';NS='+ns+';NM='+JSON.stringify(names)+';TEAMS='+JSON.stringify(teams)+';start();started=true',ctx);
+ rm.ps.forEach((p,i)=>{p.si=i;send(p.ws,{t:'start',me:i,hum,ns,cfg:rm.cfg,names,teams})});
  let n=0;const g=rm.game={ctx};
  let nx=Date.now();rm.dc={};
  const tick=()=>{try{ctx.update(.05);n++;bc(rm,{t:'snap',n,d:ctx.SNAP()});
@@ -37,7 +39,7 @@ function startGame(rm){
   if(vm.runInContext('over',ctx)){rm.game=null;rm.dc={};rm.ps.forEach(p=>p.si=null);return}
   nx+=50;if(Date.now()-nx>500)nx=Date.now();g.timer=setTimeout(tick,Math.max(0,nx-Date.now()))}
   catch(e){console.error(e);rm.game=null;bc(rm,{t:'sys',text:'Game crashed on the server'})}};
- g.timer=setTimeout(tick,50);g.info={hum,ns,cfg:rm.cfg,names}}
+ g.timer=setTimeout(tick,50);g.info={hum,ns,cfg:rm.cfg,names,teams}}
 wss.on('connection',ws=>{
  const p={id:nid++,name:'Captain',ws,room:null,last:0,tok:Math.random().toString(36).slice(2)+Date.now().toString(36)};ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);
  ws.on('message',raw=>{let m;try{m=JSON.parse(raw)}catch{return}
@@ -51,9 +53,10 @@ wss.on('connection',ws=>{
    if(!rm)return send(ws,{t:'err',msg:'No room with that code'});
    if(rm.game)return send(ws,{t:'err',msg:'Game already in progress'});
    if(rm.ps.length>=8)return send(ws,{t:'err',msg:'Room is full (8 players)'});
-   p.name=clean(m.name,16)||'Captain';rm.ps.push(p);p.room=rm;bc(rm,{t:'sys',text:p.name+' joined'});push(rm)}
+   p.name=clean(m.name,16)||'Captain';p.team=rm.ps.filter(x=>!x.team).length<=rm.ps.filter(x=>x.team).length?0:1;rm.ps.push(p);p.room=rm;bc(rm,{t:'sys',text:p.name+' joined'});push(rm)}
   else if(!p.room)return;
   else if(m.t=='cfg'&&p.room.host==p.id){p.room.cfg=cf(m.cfg);push(p.room)}
+  else if(m.t=='team'&&!p.room.game){p.team=m.team?1:0;push(p.room)}
   else if(m.t=='chat'){const n=Date.now();if(n-p.last<400)return;p.last=n;const x=clean(m.text,160);if(x)bc(p.room,{t:'chat',from:p.name,text:x})}
   else if(m.t=='start'&&p.room.host==p.id&&!p.room.game)startGame(p.room);
   else if(p.room.game&&p.si!=null){const x=p.room.game.ctx;let t='';
