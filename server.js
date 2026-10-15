@@ -59,6 +59,7 @@ wss.on('connection',ws=>{
   else if(m.t=='list'&&!p.room)send(ws,{t:'rooms',rooms:listRooms()});
   else if(!p.room)return;
   else if(m.t=='cfg'&&p.room.host==p.id){p.room.cfg=cf(m.cfg);push(p.room)}
+  else if(m.t=='name'&&!p.room.game){p.name=clean(m.name,16)||p.name;push(p.room)}
   else if(m.t=='team'&&!p.room.game){p.team=m.team?1:0;push(p.room)}
   else if(m.t=='chat'){const n=Date.now();if(n-p.last<400)return;p.last=n;const x=clean(m.text,160);if(x)bc(p.room,{t:'chat',from:p.name,text:x})}
   else if(m.t=='start'&&p.room.host==p.id&&!p.room.game)startGame(p.room);

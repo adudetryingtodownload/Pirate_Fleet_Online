@@ -33,7 +33,7 @@ button:not(:disabled):hover{background:#6b3f1c}
 <button disabled>Online vs AI (coming soon)</button>
 <p><b>Sail:</b> W/S throttle, A/D turn. <b>Crew:</b> left-click a pirate, then right-click a cannon to man it. Press L to auto-load, R to auto-repair, B to bail, N for the crow's nest, and Tab to swap the gun crews to the other side. <b>Mines:</b> press M on three pirates (or right-click the stern dropper): the first two man it, the third loads it. Then press X to drop a mine behind you. <b>Oars:</b> press O on a pirate (or right-click an oar seat near the bow); each manned oar adds speed. <b>Wheel</b> zooms, drag or arrow keys look around. <b>Space</b> fires every manned, loaded cannon. 1000 gal sinks you; last ship afloat wins.</p></div>
 <div id="lobby"><div class="panel"><h2>⚓ Lobby</h2>
-<div class="row"><div class="cr"><input id="nm" placeholder="Your name" maxlength="16"><button id="mk">Create game</button></div><div id="rooms" style="margin-top:6px;font-size:13px"></div><div id="ns" style="font-size:13px;margin-top:6px"></div></div>
+<div class="row"><div class="cr"><input id="nm" placeholder="Your name" maxlength="16"><button id="sn">Set name</button><button id="mk">Create game</button></div><div id="nmok" style="font-size:12px;margin-top:4px;opacity:.9"></div><div id="rooms" style="margin-top:6px;font-size:13px"></div><div id="ns" style="font-size:13px;margin-top:6px"></div></div>
 <div class="row"><label>AI opponents: <b id="vA">3</b></label><input type="range" id="sA" min="0" max="7" value="3"></div>
 <div class="row"><label>Difficulty: <b id="vD"></b></label><input type="range" id="sD" min="1" max="5" value="3"></div>
 <div class="row"><label>Game type: <b id="vT"></b></label><input type="range" id="sT" min="0" max="3" value="0"></div>
@@ -43,7 +43,7 @@ button:not(:disabled):hover{background:#6b3f1c}
 <div class="row" id="rG"><label>Gold to bank: <b id="vG">7000</b></label><input type="range" id="sG" min="3000" max="15000" step="1000" value="7000"></div>
 <div class="row"><label>Players in game</label><div id="plist"></div></div>
 <div id="log"></div><div class="cr"><input id="ci" placeholder="Chat with the crew..." maxlength="120"><button id="cs">Send</button></div>
-<div class="btns"><button id="back">Back</button><button id="play">Set Sail!</button></div></div></div>
+<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div></div></div>
 <div id="gchat" hidden><div id="gl"></div><input id="gi" maxlength="120" placeholder="Enter sends, Esc closes" hidden></div>
 <div id="bar" hidden>
 <button data-k="H">? Controls (H)</button><button data-k="T">💬 Chat (T)</button>
@@ -69,7 +69,7 @@ function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300
  s.oars=[[350,-1,78],[350,1,78],[430,-1,58],[430,1,58]].map(a=>({x:a[0],s:a[1],y:a[1]*a[2],man:null}));s.by=null;s.st='';s.mm=2;s.mc=0;s.md={ld:false,mn:0};s.wp=[];s.thr=0;s.v=0;s.water=0;s.holes=[];s.sink=0;s.nest=false;s.cn=[];s.pr=[];
  for(const d of[-1,1])for(let j=0;j<6;j++)s.cn.push({x:-410+j*100,s:d,man:null,ld:false,t:rnd(6,12)});
  for(let k=0;k<10;k++)s.pr.push({x:-300+(k%5)*120,y:-40+Math.floor(k/5)*80,job:null,pend:null,tg:null,carry:false,w:0,col:PC[k%3],bt:{x:30+(k%3)*50,y:[0,45,-45][k%3]},rs:{x:150+(k%3)*60,y:[-60,0,60][k%3]}})}
-function start(){ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=Math.min(W/330,H/170);bx=by=0;
+function start(){musicStop();ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=Math.min(W/330,H/170);bx=by=0;
  cam={x:P.x,y:P.y,z:bz,r:-P.h};$('menu').style.display='none';$('lobby').style.display='none';$('bar').hidden=false}
 const cfg={ai:3,diff:3,type:0,slots:1,laps:3,lives:3,mins:5,goal:7000},DN=['','Cabin boy','Sailor','Captain','Commodore','Pirate King'],TN=['Last ship floating','Go for the gold (timed, most gold wins)','Ship race (laps around the island, with cannons)','Team gold (first team to bank the target)'],
 BN=['Red','Green','Gold','Violet','Orange','Teal','Pink'],RP=['Yarr, ye be sinking tonight!','Mind yer stern, mines be about.','Me cannons be hungry.','Fair winds, ye scurvy dog.','See ye at the bottom o the sea!'];
@@ -85,8 +85,8 @@ function lob(){const h0=room?room.players.length:1,mn=h0>=2?0:1;$('sA').min=mn;$
   let ta=pp.filter(p=>!p.team).length,tb=hn-ta;for(let i=0;i<an;i++){const t=ta<=tb?0:1;if(t)tb++;else ta++;mk(cols[t],'AI captain — '+DN[cfg.diff],COLS[t],1)}}
  else{for(let i=0;i<8;i++){const h=i<hn,a=!h&&i<hn+an;mk(pl,h?nm(pp[i]):a?'AI captain — '+DN[cfg.diff]:'Open slot',h||a?COLS[i]:'#555',h||a)}}}
 ['sA','sD','sT','sL','sLv','sM','sG'].forEach(i=>$(i).oninput=()=>{lob();sendCfg()});
-$('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob();watch()};
-$('back').onclick=()=>{sessionStorage.removeItem('pf');if(room){tx({t:'leave'});ws.close()}$('lobby').style.display='none';$('menu').style.display='flex'};
+$('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob();watch();musicStart()};
+$('back').onclick=()=>{sessionStorage.removeItem('pf');musicStop();if(room){tx({t:'leave'});ws.close()}$('lobby').style.display='none';$('menu').style.display='flex'};
 $('play').onclick=()=>{if(!room){NET=0;HUM=1;NS=0;start()}else if(room.host==room.you)tx({t:'start'});else say('System','Waiting for the host to start')};
 function send(){const v=$('ci').value.trim();if(!v)return;$('ci').value='';if(room){tx({t:'chat',text:v});return}say('You',v);setTimeout(()=>say(BN[Math.floor(Math.random()*Math.min(cfg.ai,7))]+' captain',RP[Math.floor(Math.random()*RP.length)]),700)}
 $('cs').onclick=send;$('ci').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')send()};
@@ -317,7 +317,7 @@ function onNet(m){
   SL.forEach(i=>$(i).disabled=!host);
   $('ns').textContent='You are in a game lobby'+(host?' (host)':'')+'. Friends can join from this page: '+location.origin+location.pathname;$('rooms').textContent='';lob();if(host&&m.cfg&&m.cfg.ai!=null&&cfg.ai!=m.cfg.ai)sendCfg()}
  else if(m.t=='hello')SV=m.v;else if(m.t=='rooms')showRooms(m.rooms);else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d,m.n);else if(m.t=='note')note(m.text);else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
-$('nm').value='Captain'+(Math.random()*90+10|0);
+$('nm').value=localStorage.getItem('pf_name')||'Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
 let lastIn='';
 function sendIn(){const k={w:!!keys.w,a:!!keys.a,s:!!keys.s,d:!!keys.d},j=JSON.stringify(k);if(j!=lastIn){lastIn=j;tx({t:'in',k})}}
@@ -335,6 +335,22 @@ function applySnap(d,n){const S=JSON.parse(d);S.t=n*.05;sc++;const nw=performanc
 function rejoin(n){const r=JSON.parse(sessionStorage.getItem('pf')||'null');if(!r||n>20)return;say('System','Reconnecting...');
  conn(()=>tx({t:'rejoin',code:r.code,tok:r.tok,name:$('nm').value}));setTimeout(()=>{if(!(ws&&ws.readyState==1&&room))rejoin(n+1)},3000)}
 if(sessionStorage.getItem('pf')&&!new URLSearchParams(location.search).get('room'))setTimeout(()=>rejoin(18),500);
+function setName(){const v=$('nm').value.trim().replace(/[<>]/g,'').slice(0,16);if(!v){$('nmok').textContent='Please type a name first';return}
+ $('nm').value=v;localStorage.setItem('pf_name',v);if(room)tx({t:'name',name:v});$('nmok').textContent='✓ Name set to '+v}
+$('sn').onclick=setName;$('nm').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')setName()};
+let AC=null,MG=null,NB=null,mg=null,mt=0,ms=0,musicOn=localStorage.getItem('pf_music')!='0';
+const NT=n=>440*Math.pow(2,(n-69)/12),
+MEL=[[62,62,65,69,69,65],[67,65,64,62,0,0],[67,67,70,74,74,70],[69,73,76,73,69,0],[74,74,77,76,74,72],[72,72,76,79,76,72],[73,76,73,69,71,73],[74,0,0,69,0,62]],BAS=[38,38,43,45,38,48,45,38];
+function tone(ty,f,t,d,v,lp){const o=AC.createOscillator(),g=AC.createGain(),q=AC.createBiquadFilter();o.type=ty;o.frequency.value=f;q.type='lowpass';q.frequency.value=lp;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(q);q.connect(g);g.connect(MG);o.start(t);o.stop(t+d+.05)}
+function drum(t,k){if(k){const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(40,t+.12);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.0001,t+.15);o.connect(g);g.connect(MG);o.start(t);o.stop(t+.2)}
+ else{const s=AC.createBufferSource(),g=AC.createGain(),h=AC.createBiquadFilter();s.buffer=NB;h.type='highpass';h.frequency.value=2500;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.0001,t+.09);s.connect(h);h.connect(g);g.connect(MG);s.start(t)}}
+function tick(s,t){const b=s/6|0,i=s%6,n=MEL[b][i];if(n)tone('sawtooth',NT(n),t,.3,.07,2200);if(i==0||i==3)tone('triangle',NT(BAS[b]+(i?7:0)),t,.4,.22,700);if(i==0)drum(t,1);if(i==3)drum(t,0)}
+function musicStart(){if(!musicOn||mg)return;const C=typeof AudioContext!='undefined'?AudioContext:window.webkitAudioContext;if(!C)return;
+ if(!AC){AC=new C();MG=AC.createGain();MG.gain.value=.4;MG.connect(AC.destination);NB=AC.createBuffer(1,AC.sampleRate*.2|0,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+ AC.resume();mt=AC.currentTime+.1;ms=0;mg=setInterval(()=>{while(mt<AC.currentTime+.3){tick(ms,mt);mt+=.19;ms=(ms+1)%48}},50)}
+function musicStop(){if(mg){clearInterval(mg);mg=null}}
+$('mus').textContent=musicOn?'🔊 Music on':'🔇 Music off';
+$('mus').onclick=()=>{musicOn=!musicOn;localStorage.setItem('pf_music',musicOn?'1':'0');$('mus').textContent=musicOn?'🔊 Music on':'🔇 Music off';if(musicOn)musicStart();else musicStop()};
 let lt=0,gotList=0,SV=0;
 function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok v3'},4000)})}
 setInterval(()=>{if(!room&&$('lobby').style.display=='flex'&&ws&&ws.readyState==1)tx({t:'list'})},3000);
