@@ -40,6 +40,7 @@ function startGame(rm){
   nx+=50;if(Date.now()-nx>500)nx=Date.now();g.timer=setTimeout(tick,Math.max(0,nx-Date.now()))}
   catch(e){console.error(e);rm.game=null;bc(rm,{t:'sys',text:'Game crashed on the server'})}};
  g.timer=setTimeout(tick,50);g.info={hum,ns,cfg:rm.cfg,names,teams}}
+const listRooms=()=>[...rooms.values()].map(r=>({code:r.code,host:(r.ps.find(x=>x.id==r.host)||r.ps[0]).name,n:r.ps.length,type:r.cfg.type|0,state:r.game?'playing':'lobby'}));
 wss.on('connection',ws=>{
  const p={id:nid++,name:'Captain',ws,room:null,last:0,tok:Math.random().toString(36).slice(2)+Date.now().toString(36)};ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);
  ws.on('message',raw=>{let m;try{m=JSON.parse(raw)}catch{return}
@@ -54,6 +55,7 @@ wss.on('connection',ws=>{
    if(rm.game)return send(ws,{t:'err',msg:'Game already in progress'});
    if(rm.ps.length>=8)return send(ws,{t:'err',msg:'Room is full (8 players)'});
    p.name=clean(m.name,16)||'Captain';p.team=rm.ps.filter(x=>!x.team).length<=rm.ps.filter(x=>x.team).length?0:1;rm.ps.push(p);p.room=rm;bc(rm,{t:'sys',text:p.name+' joined'});push(rm)}
+  else if(m.t=='list'&&!p.room)send(ws,{t:'rooms',rooms:listRooms()});
   else if(!p.room)return;
   else if(m.t=='cfg'&&p.room.host==p.id){p.room.cfg=cf(m.cfg);push(p.room)}
   else if(m.t=='team'&&!p.room.game){p.team=m.team?1:0;push(p.room)}

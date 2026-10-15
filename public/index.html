@@ -33,7 +33,7 @@ button:not(:disabled):hover{background:#6b3f1c}
 <button disabled>Online vs AI (coming soon)</button>
 <p><b>Sail:</b> W/S throttle, A/D turn. <b>Crew:</b> left-click a pirate, then right-click a cannon to man it. Press L to auto-load, R to auto-repair, B to bail, N for the crow's nest, and Tab to swap the gun crews to the other side. <b>Mines:</b> press M on three pirates (or right-click the stern dropper): the first two man it, the third loads it. Then press X to drop a mine behind you. <b>Oars:</b> press O on a pirate (or right-click an oar seat near the bow); each manned oar adds speed. <b>Wheel</b> zooms, drag or arrow keys look around. <b>Space</b> fires every manned, loaded cannon. 1000 gal sinks you; last ship afloat wins.</p></div>
 <div id="lobby"><div class="panel"><h2>⚓ Lobby</h2>
-<div class="row"><div class="cr"><input id="nm" placeholder="Your name" maxlength="16"><button id="mk">Create room</button></div><div class="cr"><input id="cd" placeholder="Room code" maxlength="4"><button id="jn">Join</button></div><div id="ns" style="font-size:13px;margin-top:6px"></div></div>
+<div class="row"><div class="cr"><input id="nm" placeholder="Your name" maxlength="16"><button id="mk">Create game</button></div><div id="rooms" style="margin-top:6px;font-size:13px"></div><div id="ns" style="font-size:13px;margin-top:6px"></div></div>
 <div class="row"><label>AI opponents: <b id="vA">3</b></label><input type="range" id="sA" min="0" max="7" value="3"></div>
 <div class="row"><label>Difficulty: <b id="vD"></b></label><input type="range" id="sD" min="1" max="5" value="3"></div>
 <div class="row"><label>Game type: <b id="vT"></b></label><input type="range" id="sT" min="0" max="3" value="0"></div>
@@ -85,7 +85,7 @@ function lob(){const h0=room?room.players.length:1,mn=h0>=2?0:1;$('sA').min=mn;$
   let ta=pp.filter(p=>!p.team).length,tb=hn-ta;for(let i=0;i<an;i++){const t=ta<=tb?0:1;if(t)tb++;else ta++;mk(cols[t],'AI captain — '+DN[cfg.diff],COLS[t],1)}}
  else{for(let i=0;i<8;i++){const h=i<hn,a=!h&&i<hn+an;mk(pl,h?nm(pp[i]):a?'AI captain — '+DN[cfg.diff]:'Open slot',h||a?COLS[i]:'#555',h||a)}}}
 ['sA','sD','sT','sL','sLv','sM','sG'].forEach(i=>$(i).oninput=()=>{lob();sendCfg()});
-$('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob()};
+$('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob();watch()};
 $('back').onclick=()=>{sessionStorage.removeItem('pf');if(room){tx({t:'leave'});ws.close()}$('lobby').style.display='none';$('menu').style.display='flex'};
 $('play').onclick=()=>{if(!room){NET=0;HUM=1;NS=0;start()}else if(room.host==room.you)tx({t:'start'});else say('System','Waiting for the host to start')};
 function send(){const v=$('ci').value.trim();if(!v)return;$('ci').value='';if(room){tx({t:'chat',text:v});return}say('You',v);setTimeout(()=>say(BN[Math.floor(Math.random()*Math.min(cfg.ai,7))]+' captain',RP[Math.floor(Math.random()*RP.length)]),700)}
@@ -315,12 +315,10 @@ function onNet(m){
  if(m.t=='room'){room=m;const host=m.host==m.you;
   if(!host&&m.cfg)for(const k of SL)if(m.cfg[SM[k]]!=null)$(k).value=m.cfg[SM[k]];
   SL.forEach(i=>$(i).disabled=!host);
-  $('ns').textContent='Room '+m.code+(host?' (you are host)':'')+'. Invite link: '+location.origin+'/?room='+m.code;lob();if(host&&m.cfg&&m.cfg.ai!=null&&cfg.ai!=m.cfg.ai)sendCfg()}
- else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d,m.n);else if(m.t=='note')note(m.text);else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
+  $('ns').textContent='You are in a game lobby'+(host?' (host)':'')+'. Friends can join from this page: '+location.origin+location.pathname;$('rooms').textContent='';lob();if(host&&m.cfg&&m.cfg.ai!=null&&cfg.ai!=m.cfg.ai)sendCfg()}
+ else if(m.t=='rooms')showRooms(m.rooms);else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d,m.n);else if(m.t=='note')note(m.text);else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
 $('nm').value='Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
-$('jn').onclick=()=>conn(()=>tx({t:'join',code:$('cd').value,name:$('nm').value}));
-const qr=new URLSearchParams(location.search).get('room');if(qr)$('cd').value=qr.toUpperCase();
 let lastIn='';
 function sendIn(){const k={w:!!keys.w,a:!!keys.a,s:!!keys.s,d:!!keys.d},j=JSON.stringify(k);if(j!=lastIn){lastIn=j;tx({t:'in',k})}}
 function startNet(m){Object.assign(cfg,m.cfg);HUM=m.hum;NS=m.ns;NM=m.names;NET=1;lastIn='';buf=[];rt=0;ME=m.me;SP=0;TEAMS=m.teams||[];if(room)sessionStorage.setItem('pf',JSON.stringify({code:room.code,tok:room.tok}));start();started=true;P=G.sh[m.me];cam={x:P.x,y:P.y,z:bz,r:-P.h};say('System','Game started')}
@@ -337,6 +335,14 @@ function applySnap(d,n){const S=JSON.parse(d);S.t=n*.05;sc++;const nw=performanc
 function rejoin(n){const r=JSON.parse(sessionStorage.getItem('pf')||'null');if(!r||n>20)return;say('System','Reconnecting...');
  conn(()=>tx({t:'rejoin',code:r.code,tok:r.tok,name:$('nm').value}));setTimeout(()=>{if(!(ws&&ws.readyState==1&&room))rejoin(n+1)},3000)}
 if(sessionStorage.getItem('pf')&&!new URLSearchParams(location.search).get('room'))setTimeout(()=>rejoin(18),500);
+function watch(){conn(()=>tx({t:'list'}))}
+setInterval(()=>{if(!room&&$('lobby').style.display=='flex'&&ws&&ws.readyState==1)tx({t:'list'})},3000);
+function showRooms(l){if(room)return;$('ns').textContent='';const b=$('rooms');b.replaceChildren();
+ if(!l.length){b.textContent='No open games right now. Create one and your friends will see it here.';return}
+ l.forEach(r=>{const d=document.createElement('div');d.style.cssText='display:flex;gap:8px;align-items:center;margin:3px 0';
+  const t=document.createElement('span');t.style.flex='1';t.textContent=r.host+"'s game · "+r.n+'/8 players · '+(TN[r.type]||'').split(' (')[0]+' · '+(r.state=='lobby'?'waiting':'in progress');
+  const j=document.createElement('button');j.textContent=r.state=='lobby'?'Join':'In progress';j.disabled=r.state!='lobby'||r.n>=8;j.style.cssText='font-size:12px;padding:3px 10px;border-width:2px';
+  j.onclick=()=>tx({t:'join',code:r.code,name:$('nm').value});d.append(t,j);b.appendChild(d)})}
 const GM=[];let chatOn=0;
 function gmsg(t){GM.push([t,Date.now()]);if(GM.length>30)GM.shift();gr()}
 function gr(){$('gchat').hidden=!(NET&&G&&!over);const n=Date.now(),l=GM.filter(x=>chatOn||n-x[1]<10000).slice(chatOn?-12:-6);$('gl').replaceChildren(...l.map(x=>{const d=document.createElement('div');d.textContent=x[0];return d}))}
@@ -352,5 +358,4 @@ function interp(dt){const L=buf[buf.length-1];if(!L)return;const tg=L.t-dl;
   p[19].forEach((u,j)=>{const w=q[19][j],o=s.pr[j];if(o&&w){o.x=l(u[0],w[0]);o.y=l(u[1],w[1])}})});
  const e=rt-L.t;G.pj=L.p.map(p=>({x:p[0]+p[2]*e,y:p[1]+p[3]*e}))}
 (function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000||0);last=t;if(!G)return;tt-=dt;fc++;if(NET)interp(dt);else if(started&&!over)update(dt);camUpd(dt);draw()})(0);
-if(qr)$('go').onclick();
 </script></body></html>

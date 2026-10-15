@@ -10,5 +10,5 @@ Rooms, chat, shared settings and the host-started online game. The server runs t
 1. Make a free GitHub account and upload this folder as a new repository.
 2. On render.com: New > Web Service > connect the repo.
 3. Runtime: Node. Build command: `npm install`. Start command: `npm start`. Free plan.
-4. When it's live, open the URL Render gives you, create a room and send family the invite link shown in the lobby.
+4. When it's live, open the URL Render gives you, click Play, then Create game, and send family the plain site link. They open it, click Play and pick your game from the list.
 Free plans sleep when idle, so the first visit can take about a minute to wake up. Any host that runs Node and supports WebSockets works (Fly.io, Railway, a VPS).
