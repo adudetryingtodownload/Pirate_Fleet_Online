@@ -13,10 +13,10 @@ const mkCode=()=>{let c;do{c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ
 const clean=(s,n)=>String(s||'').replace(/[<>]/g,'').trim().slice(0,n);
 const cf=c=>{const o={};for(const k of['ai','diff','type','laps','lives','mins','goal'])if(Number.isFinite(+(c&&c[k])))o[k]=+c[k];return o};
 const send=(ws,o)=>{if(ws.readyState==1)ws.send(JSON.stringify(o))};
-const snap=(rm,p)=>({t:'room',code:rm.code,you:p.id,host:rm.host,cfg:rm.cfg,players:rm.ps.map(x=>({id:x.id,name:x.name}))});
+const snap=(rm,p)=>({t:'room',code:rm.code,you:p.id,tok:p.tok,host:rm.host,cfg:rm.cfg,players:rm.ps.map(x=>({id:x.id,name:x.name}))});
 const push=rm=>rm.ps.forEach(p=>send(p.ws,snap(rm,p)));
 const bc=(rm,o)=>rm.ps.forEach(p=>send(p.ws,o));
-function leave(p){const rm=p.room;if(!rm)return;p.room=null;rm.ps=rm.ps.filter(x=>x!==p);if(rm.game&&p.si!=null)rm.game.ctx.AIOF(p.si);
+function leave(p){const rm=p.room;if(!rm)return;p.room=null;rm.ps=rm.ps.filter(x=>x!==p);if(rm.game&&p.si!=null){rm.game.ctx.AIOF(p.si);rm.dc[p.tok]={si:p.si,name:p.name}}
  if(!rm.ps.length){if(rm.game)clearInterval(rm.game.timer);rooms.delete(rm.code);return}
  if(rm.host==p.id)rm.host=rm.ps[0].id;
  bc(rm,{t:'sys',text:p.name+' left the room'});push(rm)}
@@ -31,15 +31,25 @@ function startGame(rm){
  vm.runInContext('Object.assign(cfg,'+JSON.stringify(rm.cfg)+');HUM='+hum+';NS='+ns+';NM='+JSON.stringify(names)+';start();started=true',ctx);
  rm.ps.forEach((p,i)=>{p.si=i;send(p.ws,{t:'start',me:i,hum,ns,cfg:rm.cfg,names})});
  let n=0;const g=rm.game={ctx};
- g.timer=setInterval(()=>{try{ctx.update(.05);{n++;bc(rm,{t:'snap',n,d:ctx.SNAP()});if(vm.runInContext('over',ctx)){clearInterval(g.timer);rm.game=null;rm.ps.forEach(p=>p.si=null)}}}
-  catch(e){console.error(e);clearInterval(g.timer);rm.game=null;bc(rm,{t:'sys',text:'Game crashed on the server'})}},50)}
+ let nx=Date.now();rm.dc={};
+ const tick=()=>{try{ctx.update(.05);n++;bc(rm,{t:'snap',n,d:ctx.SNAP()});
+  for(const[i,t] of ctx.OUTQ.splice(0)){if(i<0)bc(rm,{t:'note',text:t});else{const q=rm.ps.find(x=>x.si===i);if(q)send(q.ws,{t:'note',text:t})}}
+  if(vm.runInContext('over',ctx)){rm.game=null;rm.dc={};rm.ps.forEach(p=>p.si=null);return}
+  nx+=50;if(Date.now()-nx>500)nx=Date.now();g.timer=setTimeout(tick,Math.max(0,nx-Date.now()))}
+  catch(e){console.error(e);rm.game=null;bc(rm,{t:'sys',text:'Game crashed on the server'})}};
+ g.timer=setTimeout(tick,50);g.info={hum,ns,cfg:rm.cfg,names}}
 wss.on('connection',ws=>{
- const p={id:nid++,name:'Captain',ws,room:null,last:0};ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);
+ const p={id:nid++,name:'Captain',ws,room:null,last:0,tok:Math.random().toString(36).slice(2)+Date.now().toString(36)};ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);
  ws.on('message',raw=>{let m;try{m=JSON.parse(raw)}catch{return}
-  if(m.t=='create'&&!p.room){if(rooms.size>=200)return send(ws,{t:'err',msg:'Server is full, try later'});
-   p.name=clean(m.name,16)||'Captain';const rm={code:mkCode(),host:p.id,ps:[p],cfg:cf(m.cfg)};p.room=rm;rooms.set(rm.code,rm);push(rm)}
+  if(m.t=='rejoin'&&!p.room){const rm=rooms.get(clean(m.code,4).toUpperCase()),d=rm&&rm.game&&rm.dc[m.tok];
+   if(!d)return send(ws,{t:'err',msg:'Cannot rejoin that game'});
+   delete rm.dc[m.tok];p.tok=m.tok;p.name=d.name;p.si=d.si;p.room=rm;rm.ps.push(p);rm.game.ctx.AION(d.si);
+   send(ws,{t:'start',me:d.si,...rm.game.info});bc(rm,{t:'sys',text:p.name+' reconnected'});push(rm)}
+  else if(m.t=='create'&&!p.room){if(rooms.size>=200)return send(ws,{t:'err',msg:'Server is full, try later'});
+   p.name=clean(m.name,16)||'Captain';const rm={code:mkCode(),host:p.id,ps:[p],cfg:cf(m.cfg),dc:{}};p.room=rm;rooms.set(rm.code,rm);push(rm)}
   else if(m.t=='join'&&!p.room){const rm=rooms.get(clean(m.code,4).toUpperCase());
    if(!rm)return send(ws,{t:'err',msg:'No room with that code'});
+   if(rm.game)return send(ws,{t:'err',msg:'Game already in progress'});
    if(rm.ps.length>=8)return send(ws,{t:'err',msg:'Room is full (8 players)'});
    p.name=clean(m.name,16)||'Captain';rm.ps.push(p);p.room=rm;bc(rm,{t:'sys',text:p.name+' joined'});push(rm)}
   else if(!p.room)return;

@@ -133,10 +133,10 @@ function update(dt){T+=dt;for(const s of G.sh)step(s,dt);collide();
   if(hit||p.t<=0){if(!hit)fx(p.x,p.y,'s');p.dead=true}}
  G.pj=G.pj.filter(p=>!p.dead);
  for(const m of G.mn){m.t-=dt;if(m.arm>0){m.arm-=dt;continue}for(const s of G.sh){if(s==m.o||s.dead||s.sink>0||(cfg.type==3&&s.team==m.o.team))continue;const l=loc(s,m.x,m.y);if((l.x-20)**2/660**2+l.y*l.y/210**2<1){m.t=0;s.by=m.o;for(let i=0;i<4;i++)s.holes.push({x:cp(l.x+rnd(-60,60),560),y:cp(l.y*.6+rnd(-30,30),120)});fx(m.x,m.y,'h');fx(m.x+8,m.y,'h');break}}}G.mn=G.mn.filter(m=>m.t>0);
- for(const q of G.ch)for(const s of G.sh)if(q.v&&!s.dead&&s.sink<=0&&Math.hypot(s.x-q.x,s.y-q.y)<70){s.gold+=q.v;if(s==P)note('Picked up '+(q.v|0)+' gold!');q.v=0}G.ch=G.ch.filter(q=>q.v>0);
- if(cfg.type==2)for(const s of G.sh){if(s.dead||s.sink>0)continue;const g=GT[s.cp];if(Math.hypot(s.x-g.x,s.y-g.y)<200){if(s.cp==3){s.cp=0;s.lap++;if(s==P)note('Lap '+s.lap+' complete!');if(s.lap>=cfg.laps&&!over)over=NM[s.i]+' won the race!'}else s.cp++}}
- if(cfg.type==3){G.cs-=dt;if(G.cs<=0){G.cs=30;G.ch.push({x:1200+rnd(-50,50),y:1200+rnd(-50,50),v:1000});note('A new gold chest appeared in the center!')}}
- if(cfg.type==3){for(const s of G.sh){if(s.dead||s.sink>0||s.gold<=0)continue;const D=dock(s.team);if(Math.hypot(s.x-D.x,s.y-D.y)<120){G.sc[s.team]+=s.gold;if(s==P)note('Banked '+(s.gold|0)+' gold!');s.gold=0}}
+ for(const q of G.ch)for(const s of G.sh)if(q.v&&!s.dead&&s.sink<=0&&Math.hypot(s.x-q.x,s.y-q.y)<70){s.gold+=q.v;NT(s.i,'Picked up '+(q.v|0)+' gold!');q.v=0}G.ch=G.ch.filter(q=>q.v>0);
+ if(cfg.type==2)for(const s of G.sh){if(s.dead||s.sink>0)continue;const g=GT[s.cp];if(Math.hypot(s.x-g.x,s.y-g.y)<200){if(s.cp==3){s.cp=0;s.lap++;NT(s.i,'Lap '+s.lap+' complete!');if(s.lap>=cfg.laps&&!over)over=NM[s.i]+' won the race!'}else s.cp++}}
+ if(cfg.type==3){G.cs-=dt;if(G.cs<=0){G.cs=30;G.ch.push({x:1200+rnd(-50,50),y:1200+rnd(-50,50),v:1000});NT(-1,'A new gold chest appeared in the center!')}}
+ if(cfg.type==3){for(const s of G.sh){if(s.dead||s.sink>0||s.gold<=0)continue;const D=dock(s.team);if(Math.hypot(s.x-D.x,s.y-D.y)<120){G.sc[s.team]+=s.gold;NT(s.i,'Banked '+(s.gold|0)+' gold!');s.gold=0}}
   const w=G.sc.findIndex(v=>v>=cfg.goal);if(w>=0&&!over)over=(w?'Red':'Blue')+' team banked '+(G.sc[w]|0)+' gold'}for(const f of G.fx)f.t-=dt;G.fx=G.fx.filter(f=>f.t>0);
  const alive=G.sh.filter(s=>!s.dead);
  if(cfg.type==1){G.clock-=dt;if(G.clock<=0){const b=G.sh.reduce((a,s)=>s.gold>a.gold?s:a),nm=['You','Red','Green','Gold','Violet','Orange','Teal','Pink'];over=NM[b.i]+' wins with '+(b.gold|0)+' gold'}}
@@ -275,6 +275,12 @@ function RC(l){if(!sel)return note('Left-click a pirate first');let j=sel.pend;i
 function CMD(si,m){const s=G.sh[si];if(!s||s.dead)return '';P=s;sel=s.pr[m.pi]||null;toast='';if(m.t=='key')key(m.k);else if(m.t=='rc')RC({x:m.x,y:m.y});return toast}
 function INP(si,k){const s=G.sh[si];if(s)s.in={w:!!k.w,a:!!k.a,s:!!k.s,d:!!k.d}}
 function AIOF(si){const s=G.sh[si];if(s){s.ai=true;s.in={}}}
-function SNAP(){const r=v=>Math.round(v*10)/10;return JSON.stringify({o:over,k:G.clock,cs:G.cs,sc:G.sc,
+function SNAP(){const r=v=>Math.round(v*10)/10;return JSON.stringify({o:over,W:over?WIN():[],k:G.clock,cs:G.cs,sc:G.sc,
  s:G.sh.map(s=>[r(s.x),r(s.y),Math.round(s.h*1000)/1000,r(s.thr),r(s.v||0),Math.round(s.water),r(s.sink),s.dead?1:0,s.lives,s.gold|0,s.k|0,s.cp,s.lap,s.md.ld?1:0,s.md.mn,s.nest?1:0,s.holes.map(h=>[r(h.x),r(h.y)]),s.cn.map(k=>(k.ld?1:0)+(k.man?2:0)),s.oars.map(o=>o.man?1:0),s.pr.map(p=>[Math.round(p.x),Math.round(p.y),p.job||'',p.carry?1:0])]),
  p:G.pj.map(p=>[r(p.x),r(p.y),Math.round(p.vx),Math.round(p.vy)]),m:G.mn.map(m=>[r(m.x),r(m.y),m.arm>0?1:0,G.sh.indexOf(m.o)]),c:G.ch.map(q=>[r(q.x),r(q.y),q.v|0]),f:G.fx.map(f=>[r(f.x),r(f.y),f.k,r(f.t)])})}
+var OUTQ=[];function NT(i,t){OUTQ.push([i,t])}
+function AION(si){const s=G.sh[si];if(s){s.ai=false;s.in={}}}
+function WIN(){const A=G.sh.filter(s=>!s.dead);if(cfg.type==0)return A.map(s=>s.i);
+ if(cfg.type==1)return[G.sh.reduce((a,s)=>s.gold>a.gold?s:a).i];
+ if(cfg.type==2)return[G.sh.reduce((a,s)=>s.lap>a.lap?s:a).i];
+ const w=G.sc[1]>G.sc[0]?1:0;return G.sh.filter(s=>s.team==w).map(s=>s.i)}
