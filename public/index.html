@@ -320,7 +320,7 @@ function onNet(m){
 $('nm').value='Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
 $('jn').onclick=()=>conn(()=>tx({t:'join',code:$('cd').value,name:$('nm').value}));
-const qr=new URLSearchParams(location.search).get('room');if(qr){$('cd').value=qr.toUpperCase();$('go').onclick()}
+const qr=new URLSearchParams(location.search).get('room');if(qr)$('cd').value=qr.toUpperCase();
 let lastIn='';
 function sendIn(){const k={w:!!keys.w,a:!!keys.a,s:!!keys.s,d:!!keys.d},j=JSON.stringify(k);if(j!=lastIn){lastIn=j;tx({t:'in',k})}}
 function startNet(m){Object.assign(cfg,m.cfg);HUM=m.hum;NS=m.ns;NM=m.names;NET=1;lastIn='';buf=[];rt=0;ME=m.me;SP=0;TEAMS=m.teams||[];if(room)sessionStorage.setItem('pf',JSON.stringify({code:room.code,tok:room.tok}));start();started=true;P=G.sh[m.me];cam={x:P.x,y:P.y,z:bz,r:-P.h};say('System','Game started')}
@@ -352,4 +352,5 @@ function interp(dt){const L=buf[buf.length-1];if(!L)return;const tg=L.t-dl;
   p[19].forEach((u,j)=>{const w=q[19][j],o=s.pr[j];if(o&&w){o.x=l(u[0],w[0]);o.y=l(u[1],w[1])}})});
  const e=rt-L.t;G.pj=L.p.map(p=>({x:p[0]+p[2]*e,y:p[1]+p[3]*e}))}
 (function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000||0);last=t;if(!G)return;tt-=dt;fc++;if(NET)interp(dt);else if(started&&!over)update(dt);camUpd(dt);draw()})(0);
+if(qr)$('go').onclick();
 </script></body></html>
