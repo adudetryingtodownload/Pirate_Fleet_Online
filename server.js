@@ -3,7 +3,7 @@ const vm=require('vm');
 const PORT=process.env.PORT||3000,PUB=path.join(__dirname,'public');
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png'};
 const srv=http.createServer((q,r)=>{
- if(q.url=='/healthz'){r.end('ok');return}
+ if(q.url=='/healthz'){r.end('ok v3');return}
  let u=decodeURIComponent(q.url.split('?')[0]);if(u=='/')u='/index.html';
  const f=path.normalize(path.join(PUB,u));
  if(!f.startsWith(PUB)){r.writeHead(403);r.end();return}
@@ -42,6 +42,7 @@ function startGame(rm){
  g.timer=setTimeout(tick,50);g.info={hum,ns,cfg:rm.cfg,names,teams}}
 const listRooms=()=>[...rooms.values()].map(r=>({code:r.code,host:(r.ps.find(x=>x.id==r.host)||r.ps[0]).name,n:r.ps.length,type:r.cfg.type|0,state:r.game?'playing':'lobby'}));
 wss.on('connection',ws=>{
+ send(ws,{t:'hello',v:3});
  const p={id:nid++,name:'Captain',ws,room:null,last:0,tok:Math.random().toString(36).slice(2)+Date.now().toString(36)};ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);
  ws.on('message',raw=>{let m;try{m=JSON.parse(raw)}catch{return}
   if(m.t=='rejoin'&&!p.room){const rm=rooms.get(clean(m.code,4).toUpperCase()),d=rm&&rm.game&&rm.dc[m.tok];

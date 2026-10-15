@@ -316,7 +316,7 @@ function onNet(m){
   if(!host&&m.cfg)for(const k of SL)if(m.cfg[SM[k]]!=null)$(k).value=m.cfg[SM[k]];
   SL.forEach(i=>$(i).disabled=!host);
   $('ns').textContent='You are in a game lobby'+(host?' (host)':'')+'. Friends can join from this page: '+location.origin+location.pathname;$('rooms').textContent='';lob();if(host&&m.cfg&&m.cfg.ai!=null&&cfg.ai!=m.cfg.ai)sendCfg()}
- else if(m.t=='rooms')showRooms(m.rooms);else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d,m.n);else if(m.t=='note')note(m.text);else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
+ else if(m.t=='hello')SV=m.v;else if(m.t=='rooms')showRooms(m.rooms);else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d,m.n);else if(m.t=='note')note(m.text);else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
 $('nm').value='Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
 let lastIn='';
@@ -335,9 +335,10 @@ function applySnap(d,n){const S=JSON.parse(d);S.t=n*.05;sc++;const nw=performanc
 function rejoin(n){const r=JSON.parse(sessionStorage.getItem('pf')||'null');if(!r||n>20)return;say('System','Reconnecting...');
  conn(()=>tx({t:'rejoin',code:r.code,tok:r.tok,name:$('nm').value}));setTimeout(()=>{if(!(ws&&ws.readyState==1&&room))rejoin(n+1)},3000)}
 if(sessionStorage.getItem('pf')&&!new URLSearchParams(location.search).get('room'))setTimeout(()=>rejoin(18),500);
-function watch(){conn(()=>tx({t:'list'}))}
+let lt=0,gotList=0,SV=0;
+function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok v3'},4000)})}
 setInterval(()=>{if(!room&&$('lobby').style.display=='flex'&&ws&&ws.readyState==1)tx({t:'list'})},3000);
-function showRooms(l){if(room)return;$('ns').textContent='';const b=$('rooms');b.replaceChildren();
+function showRooms(l){if(room)return;gotList=1;clearTimeout(lt);$('ns').textContent='';const b=$('rooms');b.replaceChildren();
  if(!l.length){b.textContent='No open games right now. Create one and your friends will see it here.';return}
  l.forEach(r=>{const d=document.createElement('div');d.style.cssText='display:flex;gap:8px;align-items:center;margin:3px 0';
   const t=document.createElement('span');t.style.flex='1';t.textContent=r.host+"'s game · "+r.n+'/8 players · '+(TN[r.type]||'').split(' (')[0]+' · '+(r.state=='lobby'?'waiting':'in progress');

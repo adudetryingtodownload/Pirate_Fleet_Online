@@ -12,3 +12,6 @@ Rooms, chat, shared settings and the host-started online game. The server runs t
 3. Runtime: Node. Build command: `npm install`. Start command: `npm start`. Free plan.
 4. When it's live, open the URL Render gives you, click Play, then Create game, and send family the plain site link. They open it, click Play and pick your game from the list.
 Free plans sleep when idle, so the first visit can take about a minute to wake up. Any host that runs Node and supports WebSockets works (Fly.io, Railway, a VPS).
+
+## Checking that the server is up to date
+Open your site address followed by /healthz (for example https://your-app.onrender.com/healthz). It should say `ok v3`. If it says `ok`, or the page is missing, the newest server.js has not been deployed yet. Upload ALL files from the zip (server.js, sim.js, package.json, public/index.html), not just one.
