@@ -2,6 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pirate Fleet</title>
+<meta name="pf-version" content="4">
 <style>
 :root{--bg:#0d4f7d;--fg:#f6e7b8;--panel:#2e180a;--gold:#d9a83f}
 @media (prefers-color-scheme:dark){:root{--bg:#0a3a5c}}
@@ -43,19 +44,19 @@ button:not(:disabled):hover{background:#6b3f1c}
 <div class="row" id="rG"><label>Gold to bank: <b id="vG">7000</b></label><input type="range" id="sG" min="3000" max="15000" step="1000" value="7000"></div>
 <div class="row"><label>Players in game</label><div id="plist"></div></div>
 <div id="log"></div><div class="cr"><input id="ci" placeholder="Chat with the crew..." maxlength="120"><button id="cs">Send</button></div>
-<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div></div></div>
+<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v4</div></div></div>
 <div id="gchat" hidden><div id="gl"></div><input id="gi" maxlength="120" placeholder="Enter sends, Esc closes" hidden></div>
 <div id="bar" hidden>
 <button data-k="H">? Controls (H)</button><button data-k="T">💬 Chat (T)</button>
-<button data-k="C">Man Cannon (C)</button><button data-k="L">Load (L)</button><button data-k="R">Repair (R)</button><button data-k="B">Bail (B)</button><button data-k="N">Crow's Nest (N)</button><button data-k=" ">🔥 Fire (Space)</button><button data-k="M">💣 Mine Crew (M)</button><button data-k="X">Drop Mine (X)</button><button data-k="O">🚣 Oar (O)</button></div>
-<script>var HUM=1,NS=0,NM=[],NET=0,TEAMS=[];const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
+<button data-k="C">Man Cannon (C)</button><button data-k="L">Load (L)</button><button data-k="R">Repair (R)</button><button data-k="B">Bail (B)</button><button data-k="N">Crow's Nest (N)</button><button data-k=" ">🔥 Fire (Space)</button><button data-k="M">💣 Mine Crew (M)</button><button data-k="X">Drop Mine (X)</button><button data-k="O">🚣 Oar (O)</button><button id="snd">🔊 Sound</button></div>
+<script>var HUM=1,NS=0,NM=[],NET=0,TEAMS=[],EVQ=[];const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
 
 const cv=document.getElementById('c'),c=cv.getContext('2d'),$=i=>document.getElementById(i);
 let W,H;function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();onresize=rs;
 const K=.2,WS=2400,HULL=new Path2D('M 120 175 Q 120 130 170 130 L 900 130 C 1100 130 1250 210 1345 300 C 1250 390 1100 470 900 470 L 170 470 Q 120 470 120 425 Z'),
 DECK=new Path2D('M 160 170 L 900 170 C 1070 170 1190 235 1272 300 C 1190 365 1070 430 900 430 L 160 430 Q 148 430 148 418 L 148 182 Q 148 170 160 170 Z'),
 COLS=['#3b82f6','#ef4444','#22c55e','#facc15','#a855f7','#fb923c','#14b8a6','#ec4899'],PC=['#3f7a2f','#8c1c2c','#2a6f7a'];
-let toast='',tt=0,showHelp=true;const note=m=>{toast=m;tt=3};let G,P,mode='map',started=false,sel=null,over='',last=0,T=0,cam={x:1200,y:1200,z:.3,r:0};
+let toast='',tt=0,showHelp=true;const note=m=>{toast=m;tt=3;sfxNote(m)};let G,P,mode='map',started=false,sel=null,over='',last=0,T=0,cam={x:1200,y:1200,z:.3,r:0};
 const rnd=(a,b)=>a+Math.random()*(b-a),ang=a=>Math.atan2(Math.sin(a),Math.cos(a)),cp=(v,a)=>Math.max(-a,Math.min(a,v));
 
 let ISL=[];const GT=[{x:500,y:1200,h:-Math.PI/2},{x:1200,y:500,h:0},{x:1900,y:1200,h:Math.PI/2},{x:1200,y:1900,h:Math.PI}];
@@ -69,7 +70,7 @@ function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300
  s.oars=[[350,-1,78],[350,1,78],[430,-1,58],[430,1,58]].map(a=>({x:a[0],s:a[1],y:a[1]*a[2],man:null}));s.by=null;s.st='';s.mm=2;s.mc=0;s.md={ld:false,mn:0};s.wp=[];s.thr=0;s.v=0;s.water=0;s.holes=[];s.sink=0;s.nest=false;s.cn=[];s.pr=[];
  for(const d of[-1,1])for(let j=0;j<6;j++)s.cn.push({x:-410+j*100,s:d,man:null,ld:false,t:rnd(6,12)});
  for(let k=0;k<10;k++)s.pr.push({x:-300+(k%5)*120,y:-40+Math.floor(k/5)*80,job:null,pend:null,tg:null,carry:false,w:0,col:PC[k%3],bt:{x:30+(k%3)*50,y:[0,45,-45][k%3]},rs:{x:150+(k%3)*60,y:[-60,0,60][k%3]}})}
-function start(){musicStop();ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=Math.min(W/330,H/170);bx=by=0;
+function start(){musicStop();audioInit();if(AC)AC.resume();ambStart();ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=Math.min(W/330,H/170);bx=by=0;
  cam={x:P.x,y:P.y,z:bz,r:-P.h};$('menu').style.display='none';$('lobby').style.display='none';$('bar').hidden=false}
 const cfg={ai:3,diff:3,type:0,slots:1,laps:3,lives:3,mins:5,goal:7000},DN=['','Cabin boy','Sailor','Captain','Commodore','Pirate King'],TN=['Last ship floating','Go for the gold (timed, most gold wins)','Ship race (laps around the island, with cannons)','Team gold (first team to bank the target)'],
 BN=['Red','Green','Gold','Violet','Orange','Teal','Pink'],RP=['Yarr, ye be sinking tonight!','Mind yer stern, mines be about.','Me cannons be hungry.','Fair winds, ye scurvy dog.','See ye at the bottom o the sea!'];
@@ -85,14 +86,14 @@ function lob(){const h0=room?room.players.length:1,mn=h0>=2?0:1;$('sA').min=mn;$
   let ta=pp.filter(p=>!p.team).length,tb=hn-ta;for(let i=0;i<an;i++){const t=ta<=tb?0:1;if(t)tb++;else ta++;mk(cols[t],'AI captain — '+DN[cfg.diff],COLS[t],1)}}
  else{for(let i=0;i<8;i++){const h=i<hn,a=!h&&i<hn+an;mk(pl,h?nm(pp[i]):a?'AI captain — '+DN[cfg.diff]:'Open slot',h||a?COLS[i]:'#555',h||a)}}}
 ['sA','sD','sT','sL','sLv','sM','sG'].forEach(i=>$(i).oninput=()=>{lob();sendCfg()});
-$('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob();watch();musicStart()};
-$('back').onclick=()=>{sessionStorage.removeItem('pf');musicStop();if(room){tx({t:'leave'});ws.close()}$('lobby').style.display='none';$('menu').style.display='flex'};
+$('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob();watch();ambStop();audioInit();musicStart()};
+$('back').onclick=()=>{sessionStorage.removeItem('pf');musicStop();ambStop();if(room){tx({t:'leave'});ws.close()}$('lobby').style.display='none';$('menu').style.display='flex'};
 $('play').onclick=()=>{if(!room){NET=0;HUM=1;NS=0;start()}else if(room.host==room.you)tx({t:'start'});else say('System','Waiting for the host to start')};
 function send(){const v=$('ci').value.trim();if(!v)return;$('ci').value='';if(room){tx({t:'chat',text:v});return}say('You',v);setTimeout(()=>say(BN[Math.floor(Math.random()*Math.min(cfg.ai,7))]+' captain',RP[Math.floor(Math.random()*RP.length)]),700)}
 $('cs').onclick=send;$('ci').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')send()};
 
 const loc=(s,x,y)=>{const dx=x-s.x,dy=y-s.y,co=Math.cos(s.h),si=Math.sin(s.h);return{x:(dx*co+dy*si)/K,y:(-dx*si+dy*co)/K}};
-const fx=(x,y,k)=>G.fx.push({x,y,k,t:.6});
+const fx=(x,y,k)=>{G.fx.push({x,y,k,t:.6});EVQ.push([k,Math.round(x),Math.round(y)])};
 const vis=s=>s==P||(!s.dead&&Math.hypot(s.x-P.x,s.y-P.y)<(P.nest?1500:480));
 function fire(s,k){k.ld=false;const co=Math.cos(s.h),si=Math.sin(s.h),mx=k.x*K,my=k.s*200*K,x=s.x+mx*co-my*si,y=s.y+mx*si+my*co;
  G.pj.push({x,y,vx:-k.s*si*430,vy:k.s*co*430,t:.75,o:s});fx(x,y,'f')}
@@ -196,7 +197,7 @@ function update(dt){T+=dt;for(const s of G.sh)step(s,dt);collide();
  const alive=G.sh.filter(s=>!s.dead);
  if(cfg.type==1){G.clock-=dt;if(G.clock<=0){const b=G.sh.reduce((a,s)=>s.gold>a.gold?s:a),nm=['You','Red','Green','Gold','Violet','Orange','Teal','Pink'];over=b==P?`Victory! You hold ${P.gold|0} gold`:`Time up — ${nm[b.i]} wins with ${b.gold|0} gold (you: ${P.gold|0})`}}
  else if(P.dead)over='Defeat — your fleet is sunk';else if(alive.length==1)over='Victory! Last ship afloat';
- if(over){$('t').textContent=over;$('menu').style.display='flex';$('bar').hidden=true}}
+ if(over){ambStop();$('t').textContent=over;$('menu').style.display='flex';$('bar').hidden=true}}
 
 function camUpd(dt){let tz,tr=0,tx=P.x,ty=P.y;
  tz=bz;tx+=bx;ty+=by;if(bz>2)tr=-P.h;
@@ -323,7 +324,7 @@ let lastIn='';
 function sendIn(){const k={w:!!keys.w,a:!!keys.a,s:!!keys.s,d:!!keys.d},j=JSON.stringify(k);if(j!=lastIn){lastIn=j;tx({t:'in',k})}}
 function startNet(m){Object.assign(cfg,m.cfg);HUM=m.hum;NS=m.ns;NM=m.names;NET=1;lastIn='';buf=[];rt=0;ME=m.me;SP=0;TEAMS=m.teams||[];if(room)sessionStorage.setItem('pf',JSON.stringify({code:room.code,tok:room.tok}));start();started=true;P=G.sh[m.me];cam={x:P.x,y:P.y,z:bz,r:-P.h};say('System','Game started')}
 let fc=0,sc=0,fps=0,sps=0,buf=[],rt=0,jit=15,lastA=0,dl=.12,ME=0,SP=0;setInterval(()=>{fps=fc;sps=sc;fc=sc=0},1000);
-function applySnap(d,n){const S=JSON.parse(d);S.t=n*.05;sc++;const nw=performance.now();if(lastA)jit+=(Math.abs(nw-lastA-50)-jit)*.05;lastA=nw;dl=Math.min(.35,.08+3*jit/1000);buf.push(S);if(buf.length>40)buf.shift();
+function applySnap(d,n){const S=JSON.parse(d);S.t=n*.05;sc++;if(S.e&&S.e.length)setTimeout(()=>evs(S.e),dl*1000);const nw=performance.now();if(lastA)jit+=(Math.abs(nw-lastA-50)-jit)*.05;lastA=nw;dl=Math.min(.35,.08+3*jit/1000);buf.push(S);if(buf.length>40)buf.shift();
  S.s.forEach((a,i)=>{const s=G.sh[i];if(!s)return;
   s.thr=a[3];s.v=a[4];s.water=a[5];s.sink=a[6];s.dead=!!a[7];s.lives=a[8];s.gold=a[9];s.k=a[10];s.cp=a[11];s.lap=a[12];s.md={ld:!!a[13],mn:a[14]};s.nest=!!a[15];
   s.holes=a[16].map(h=>({x:h[0],y:h[1]}));a[17].forEach((v,j)=>{s.cn[j].ld=!!(v&1);s.cn[j].man=(v&2)?{}:null});a[18].forEach((v,j)=>{s.oars[j].man=v?{}:null});
@@ -331,7 +332,7 @@ function applySnap(d,n){const S=JSON.parse(d);S.t=n*.05;sc++;const nw=performanc
  G.mn=S.m.map(a=>({x:a[0],y:a[1],arm:a[2],o:G.sh[a[3]]}));G.ch=S.c.map(a=>({x:a[0],y:a[1],v:a[2]}));G.fx=S.f.map(a=>({x:a[0],y:a[1],k:a[2],t:a[3]}));
  G.sc=S.sc;G.cs=S.cs;G.clock=S.k;
  if(G.sh[ME]&&G.sh[ME].dead&&!SP){SP=1;note('Your fleet is sunk. You are spectating: drag and zoom to look around')}
- if(S.o&&!over){const w=S.W||[];over=w.length?(w.includes(ME)?'Victory! ':'Defeat — ')+S.o:S.o;sessionStorage.removeItem('pf');$('t').textContent=over;$('menu').style.display='flex';$('bar').hidden=true}}
+ if(S.o&&!over){const w=S.W||[];over=w.length?(w.includes(ME)?'Victory! ':'Defeat — ')+S.o:S.o;sessionStorage.removeItem('pf');ambStop();$('t').textContent=over;$('menu').style.display='flex';$('bar').hidden=true}}
 function rejoin(n){const r=JSON.parse(sessionStorage.getItem('pf')||'null');if(!r||n>20)return;say('System','Reconnecting...');
  conn(()=>tx({t:'rejoin',code:r.code,tok:r.tok,name:$('nm').value}));setTimeout(()=>{if(!(ws&&ws.readyState==1&&room))rejoin(n+1)},3000)}
 if(sessionStorage.getItem('pf')&&!new URLSearchParams(location.search).get('room'))setTimeout(()=>rejoin(18),500);
@@ -343,16 +344,36 @@ const NT=n=>440*Math.pow(2,(n-69)/12),
 MEL=[[62,62,65,69,69,65],[67,65,64,62,0,0],[67,67,70,74,74,70],[69,73,76,73,69,0],[74,74,77,76,74,72],[72,72,76,79,76,72],[73,76,73,69,71,73],[74,0,0,69,0,62]],BAS=[38,38,43,45,38,48,45,38];
 function tone(ty,f,t,d,v,lp){const o=AC.createOscillator(),g=AC.createGain(),q=AC.createBiquadFilter();o.type=ty;o.frequency.value=f;q.type='lowpass';q.frequency.value=lp;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(q);q.connect(g);g.connect(MG);o.start(t);o.stop(t+d+.05)}
 function drum(t,k){if(k){const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(40,t+.12);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.0001,t+.15);o.connect(g);g.connect(MG);o.start(t);o.stop(t+.2)}
- else{const s=AC.createBufferSource(),g=AC.createGain(),h=AC.createBiquadFilter();s.buffer=NB;h.type='highpass';h.frequency.value=2500;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.0001,t+.09);s.connect(h);h.connect(g);g.connect(MG);s.start(t)}}
+ else{const s=AC.createBufferSource(),g=AC.createGain(),h=AC.createBiquadFilter();s.buffer=NB;h.type='highpass';h.frequency.value=2500;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.0001,t+.09);s.connect(h);h.connect(g);g.connect(MG);s.start(t);s.stop(t+.12)}}
 function tick(s,t){const b=s/6|0,i=s%6,n=MEL[b][i];if(n)tone('sawtooth',NT(n),t,.3,.07,2200);if(i==0||i==3)tone('triangle',NT(BAS[b]+(i?7:0)),t,.4,.22,700);if(i==0)drum(t,1);if(i==3)drum(t,0)}
-function musicStart(){if(!musicOn||mg)return;const C=typeof AudioContext!='undefined'?AudioContext:window.webkitAudioContext;if(!C)return;
- if(!AC){AC=new C();MG=AC.createGain();MG.gain.value=.4;MG.connect(AC.destination);NB=AC.createBuffer(1,AC.sampleRate*.2|0,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
- AC.resume();mt=AC.currentTime+.1;ms=0;mg=setInterval(()=>{while(mt<AC.currentTime+.3){tick(ms,mt);mt+=.19;ms=(ms+1)%48}},50)}
+let SG=null,sfxOn=localStorage.getItem('pf_sfx')!='0',AS=null;
+function audioInit(){if(AC)return 1;const C=typeof AudioContext!='undefined'?AudioContext:(typeof webkitAudioContext!='undefined'?webkitAudioContext:null);if(!C)return 0;
+ AC=new C();MG=AC.createGain();MG.gain.value=.4;MG.connect(AC.destination);SG=AC.createGain();SG.gain.value=.8;SG.connect(AC.destination);
+ NB=AC.createBuffer(1,AC.sampleRate*2|0,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return 1}
+function musicStart(){if(!musicOn||mg||!audioInit())return;AC.resume();mt=AC.currentTime+.1;ms=0;mg=setInterval(()=>{while(mt<AC.currentTime+.3){tick(ms,mt);mt+=.19;ms=(ms+1)%48}},50)}
 function musicStop(){if(mg){clearInterval(mg);mg=null}}
 $('mus').textContent=musicOn?'🔊 Music on':'🔇 Music off';
 $('mus').onclick=()=>{musicOn=!musicOn;localStorage.setItem('pf_music',musicOn?'1':'0');$('mus').textContent=musicOn?'🔊 Music on':'🔇 Music off';if(musicOn)musicStart();else musicStop()};
+function nz(t,d,ty,f,v,dest){const s=AC.createBufferSource(),g=AC.createGain(),q=AC.createBiquadFilter();s.buffer=NB;q.type=ty;q.frequency.setValueAtTime(f,t);q.frequency.exponentialRampToValueAtTime(Math.max(60,f/4),t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(q);q.connect(g);g.connect(dest);s.start(t,Math.random());s.stop(t+d+.05)}
+function th(t,f0,f1,d,v,dest){const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(dest);o.start(t);o.stop(t+d+.05)}
+function sfx(k,v,pan){if(!AC||!sfxOn||v<.02)return;const t=AC.currentTime,o=AC.createGain();o.gain.value=v;
+ if(AC.createStereoPanner){const p=AC.createStereoPanner();p.pan.value=pan||0;o.connect(p);p.connect(SG)}else o.connect(SG);
+ if(k=='f'){nz(t,.45,'lowpass',900,.9,o);th(t,140,38,.35,.9,o)}
+ else if(k=='h'){nz(t,.3,'bandpass',1400,.8,o);th(t,90,35,.25,.7,o);th(t+.03,220,110,.1,.3,o)}
+ else if(k=='s'){nz(t,.4,'highpass',2500,.45,o)}
+ else if(k=='mine'){th(t,260,70,.3,.6,o)}
+ else if(k=='coin'){th(t,880,880,.12,.25,o);th(t+.09,1320,1320,.2,.25,o)}
+ else if(k=='bank'){[523,659,784,1047].forEach((f,i)=>th(t+i*.1,f,f,.25,.25,o))}
+ else if(k=='lap'){[392,523,659].forEach((f,i)=>th(t+i*.12,f,f,.3,.3,o))}}
+function evs(l){if(!AC||!P)return;let c=0;for(const e of l){if(c++>6)break;const d=Math.hypot(e[1]-P.x,e[2]-P.y);sfx(e[0],Math.pow(Math.max(0,1-d/1100),2),Math.max(-1,Math.min(1,(e[1]-P.x)/700)))}}
+function sfxNote(m){m=String(m);if(m.startsWith('Picked up'))sfx('coin',.8,0);else if(m.startsWith('Banked'))sfx('bank',.9,0);else if(m.startsWith('Lap'))sfx('lap',.9,0);else if(m.startsWith('Mine dropped'))sfx('mine',.8,0)}
+function ambStart(){if(!sfxOn||AS||!audioInit())return;const s=AC.createBufferSource(),q=AC.createBiquadFilter(),g=AC.createGain(),l=AC.createOscillator(),lg=AC.createGain();
+ s.buffer=NB;s.loop=true;q.type='lowpass';q.frequency.value=420;g.gain.value=.07;l.frequency.value=.13;lg.gain.value=.05;l.connect(lg);lg.connect(g.gain);s.connect(q);q.connect(g);g.connect(SG);s.start();l.start();AS=[s,l]}
+function ambStop(){if(AS){AS.forEach(n=>{try{n.stop()}catch(e){}});AS=null}}
+$('snd').textContent=sfxOn?'🔊 Sound':'🔇 Sound';
+$('snd').onclick=()=>{sfxOn=!sfxOn;localStorage.setItem('pf_sfx',sfxOn?'1':'0');$('snd').textContent=sfxOn?'🔊 Sound':'🔇 Sound';if(sfxOn&&started&&!over)ambStart();else ambStop()};
 let lt=0,gotList=0,SV=0;
-function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok v3'},4000)})}
+function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v4'},4000)})}
 setInterval(()=>{if(!room&&$('lobby').style.display=='flex'&&ws&&ws.readyState==1)tx({t:'list'})},3000);
 function showRooms(l){if(room)return;gotList=1;clearTimeout(lt);$('ns').textContent='';const b=$('rooms');b.replaceChildren();
  if(!l.length){b.textContent='No open games right now. Create one and your friends will see it here.';return}
@@ -374,5 +395,5 @@ function interp(dt){const L=buf[buf.length-1];if(!L)return;const tg=L.t-dl;
  a.s.forEach((p,i)=>{const q=b.s[i],s=G.sh[i];if(!s)return;s.x=l(p[0],q[0]);s.y=l(p[1],q[1]);s.h=p[2]+ang(q[2]-p[2])*f;
   p[19].forEach((u,j)=>{const w=q[19][j],o=s.pr[j];if(o&&w){o.x=l(u[0],w[0]);o.y=l(u[1],w[1])}})});
  const e=rt-L.t;G.pj=L.p.map(p=>({x:p[0]+p[2]*e,y:p[1]+p[3]*e}))}
-(function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000||0);last=t;if(!G)return;tt-=dt;fc++;if(NET)interp(dt);else if(started&&!over)update(dt);camUpd(dt);draw()})(0);
+(function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000||0);last=t;if(!G)return;tt-=dt;fc++;if(NET)interp(dt);else if(started&&!over){update(dt);if(EVQ.length)evs(EVQ.splice(0))}camUpd(dt);draw()})(0);
 </script></body></html>

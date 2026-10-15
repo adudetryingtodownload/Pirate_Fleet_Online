@@ -3,11 +3,11 @@ const vm=require('vm');
 const PORT=process.env.PORT||3000,PUB=path.join(__dirname,'public');
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png'};
 const srv=http.createServer((q,r)=>{
- if(q.url=='/healthz'){r.end('ok v3');return}
+ if(q.url=='/healthz'){fs.readFile(path.join(PUB,'index.html'),'utf8',(e,d)=>{const m=!e&&/pf-version" content="(\d+)/.exec(d);r.end('ok server v4 · page v'+(m?m[1]:'?'))});return}
  let u=decodeURIComponent(q.url.split('?')[0]);if(u=='/')u='/index.html';
  const f=path.normalize(path.join(PUB,u));
  if(!f.startsWith(PUB)){r.writeHead(403);r.end();return}
- fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end('Not found');return}r.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream'});r.end(d)})});
+ fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end('Not found');return}r.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store'});r.end(d)})});
 const wss=new WebSocketServer({server:srv,maxPayload:4096}),rooms=new Map();let nid=1;
 const mkCode=()=>{let c;do{c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('')}while(rooms.has(c));return c};
 const clean=(s,n)=>String(s||'').replace(/[<>]/g,'').trim().slice(0,n);
@@ -42,7 +42,7 @@ function startGame(rm){
  g.timer=setTimeout(tick,50);g.info={hum,ns,cfg:rm.cfg,names,teams}}
 const listRooms=()=>[...rooms.values()].map(r=>({code:r.code,host:(r.ps.find(x=>x.id==r.host)||r.ps[0]).name,n:r.ps.length,type:r.cfg.type|0,state:r.game?'playing':'lobby'}));
 wss.on('connection',ws=>{
- send(ws,{t:'hello',v:3});
+ send(ws,{t:'hello',v:4});
  const p={id:nid++,name:'Captain',ws,room:null,last:0,tok:Math.random().toString(36).slice(2)+Date.now().toString(36)};ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);
  ws.on('message',raw=>{let m;try{m=JSON.parse(raw)}catch{return}
   if(m.t=='rejoin'&&!p.room){const rm=rooms.get(clean(m.code,4).toUpperCase()),d=rm&&rm.game&&rm.dc[m.tok];

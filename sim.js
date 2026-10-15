@@ -1,4 +1,4 @@
-var HUM=1,NS=0,NM=[],NET=0,TEAMS=[];const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
+var HUM=1,NS=0,NM=[],NET=0,TEAMS=[],EVQ=[];const KS=['C','L','R','B','N','O','M','X',' ','TAB'];
 
 const cv=document.getElementById('c'),c=cv.getContext('2d'),$=i=>document.getElementById(i);
 let W,H;function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();onresize=rs;
@@ -37,7 +37,7 @@ function send(){const v=$('ci').value.trim();if(!v)return;$('ci').value='';if(ro
 $('cs').onclick=send;$('ci').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')send()};
 
 const loc=(s,x,y)=>{const dx=x-s.x,dy=y-s.y,co=Math.cos(s.h),si=Math.sin(s.h);return{x:(dx*co+dy*si)/K,y:(-dx*si+dy*co)/K}};
-const fx=(x,y,k)=>G.fx.push({x,y,k,t:.6});
+const fx=(x,y,k)=>{G.fx.push({x,y,k,t:.6});EVQ.push([k,Math.round(x),Math.round(y)])};
 const vis=s=>s==P||(!s.dead&&Math.hypot(s.x-P.x,s.y-P.y)<(P.nest?1500:480));
 function fire(s,k){k.ld=false;const co=Math.cos(s.h),si=Math.sin(s.h),mx=k.x*K,my=k.s*200*K,x=s.x+mx*co-my*si,y=s.y+mx*si+my*co;
  G.pj.push({x,y,vx:-k.s*si*430,vy:k.s*co*430,t:.75,o:s});fx(x,y,'f')}
@@ -275,7 +275,7 @@ function RC(l){if(!sel)return note('Left-click a pirate first');let j=sel.pend;i
 function CMD(si,m){const s=G.sh[si];if(!s||s.dead)return '';P=s;sel=s.pr[m.pi]||null;toast='';if(m.t=='key')key(m.k);else if(m.t=='rc')RC({x:m.x,y:m.y});return toast}
 function INP(si,k){const s=G.sh[si];if(s)s.in={w:!!k.w,a:!!k.a,s:!!k.s,d:!!k.d}}
 function AIOF(si){const s=G.sh[si];if(s){s.ai=true;s.in={}}}
-function SNAP(){const r=v=>Math.round(v*10)/10;return JSON.stringify({o:over,W:over?WIN():[],k:G.clock,cs:G.cs,sc:G.sc,
+function SNAP(){const r=v=>Math.round(v*10)/10;return JSON.stringify({o:over,W:over?WIN():[],e:EVQ.splice(0),k:G.clock,cs:G.cs,sc:G.sc,
  s:G.sh.map(s=>[r(s.x),r(s.y),Math.round(s.h*1000)/1000,r(s.thr),r(s.v||0),Math.round(s.water),r(s.sink),s.dead?1:0,s.lives,s.gold|0,s.k|0,s.cp,s.lap,s.md.ld?1:0,s.md.mn,s.nest?1:0,s.holes.map(h=>[r(h.x),r(h.y)]),s.cn.map(k=>(k.ld?1:0)+(k.man?2:0)),s.oars.map(o=>o.man?1:0),s.pr.map(p=>[Math.round(p.x),Math.round(p.y),p.job||'',p.carry?1:0])]),
  p:G.pj.map(p=>[r(p.x),r(p.y),Math.round(p.vx),Math.round(p.vy)]),m:G.mn.map(m=>[r(m.x),r(m.y),m.arm>0?1:0,G.sh.indexOf(m.o)]),c:G.ch.map(q=>[r(q.x),r(q.y),q.v|0]),f:G.fx.map(f=>[r(f.x),r(f.y),f.k,r(f.t)])})}
 var OUTQ=[];function NT(i,t){OUTQ.push([i,t])}
