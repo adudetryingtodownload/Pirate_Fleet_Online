@@ -1,13 +1,13 @@
 const http=require('http'),fs=require('fs'),path=require('path'),{WebSocketServer}=require('ws');
 const vm=require('vm');
 const PORT=process.env.PORT||3000,PUB=path.join(__dirname,'public');
-const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png'};
+const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.mp3':'audio/mpeg','.png':'image/png'};
 const srv=http.createServer((q,r)=>{
  if(q.url=='/healthz'){fs.readFile(path.join(PUB,'index.html'),'utf8',(e,d)=>{const m=!e&&/pf-version" content="(\d+)/.exec(d);r.end('ok server v4 · page v'+(m?m[1]:'?'))});return}
  let u=decodeURIComponent(q.url.split('?')[0]);if(u=='/')u='/index.html';
  const f=path.normalize(path.join(PUB,u));
  if(!f.startsWith(PUB)){r.writeHead(403);r.end();return}
- fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end('Not found');return}r.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store'});r.end(d)})});
+ fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end('Not found');return}r.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream','Cache-Control':path.extname(f)=='.mp3'?'public, max-age=86400':'no-store'});r.end(d)})});
 const wss=new WebSocketServer({server:srv,maxPayload:4096}),rooms=new Map();let nid=1;
 const mkCode=()=>{let c;do{c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('')}while(rooms.has(c));return c};
 const clean=(s,n)=>String(s||'').replace(/[<>]/g,'').trim().slice(0,n);

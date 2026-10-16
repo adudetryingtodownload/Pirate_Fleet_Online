@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pirate Fleet</title>
-<meta name="pf-version" content="7">
+<meta name="pf-version" content="8">
 <style>
 :root{--bg:#0d4f7d;--fg:#f6e7b8;--panel:#2e180a;--gold:#d9a83f}
 @media (prefers-color-scheme:dark){:root{--bg:#0a3a5c}}
@@ -44,11 +44,11 @@ button:not(:disabled):hover{background:#6b3f1c}
 <div class="row" id="rG"><label>Gold to bank: <b id="vG">7000</b></label><input type="range" id="sG" min="3000" max="15000" step="1000" value="7000"></div>
 <div class="row"><label>Players in game</label><div id="plist"></div></div>
 <div id="log"></div><div class="cr"><input id="ci" placeholder="Chat with the crew..." maxlength="120"><button id="cs">Send</button></div>
-<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v7</div></div></div>
+<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v8</div></div></div>
 <div id="gchat" hidden><div id="gl"></div><input id="gi" maxlength="120" placeholder="Enter sends, Esc closes" hidden></div>
 <div id="bar" hidden>
 <button data-k="H">? Controls (H)</button><button data-k="T">💬 Chat (T)</button>
-<button data-k="C">Man Cannon (C)</button><button data-k="L">Load (L)</button><button data-k="R">Repair (R)</button><button data-k="B">Bail (B)</button><button data-k="N">Crow's Nest (N)</button><button data-k=" ">🔥 Fire (Space)</button><button data-k="B" id="gb" style="display:none">⛽ Build rig (B)</button><button data-k="G" id="gg" style="display:none">🛡 Gunner (G)</button><button data-k="M">💣 Mine Crew (M)</button><button data-k="X">Drop Mine (X)</button><button data-k="O">🚣 Oar (O)</button><button id="snd">🔊 Sound</button></div>
+<button data-k="C">Man Cannon (C)</button><button data-k="L">Load (L)</button><button data-k="R">Repair (R)</button><button data-k="B">Bail (B)</button><button data-k="N">Crow's Nest (N)</button><button data-k=" ">🔥 Fire (Space)</button><button data-k="B" id="gb" style="display:none">⛽ Build rig (B)</button><button data-k="G" id="gg" style="display:none">🛡 Gunner (G)</button><button data-k="M">💣 Mine Crew (M)</button><button data-k="X">Drop Mine (X)</button><button data-k="O">🚣 Oar (O)</button><button id="msb">🎵 Music</button><button id="snd">🔊 Sound</button></div>
 <script>var HUM=1,NS=0,NM=[],NET=0,TEAMS=[],EVQ=[];const KS=['C','L','R','B','N','O','M','X','G',' ','TAB'];
 
 const cv=document.getElementById('c'),c=cv.getContext('2d'),$=i=>document.getElementById(i);
@@ -71,11 +71,11 @@ function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300
  if(cfg.type==4){const a=Math.random()*6.283,r=450+Math.random()*450;s.x=1200+Math.cos(a)*r;s.y=1200+Math.sin(a)*r;s.h=Math.random()*6.283;s.thr=.5;s.v=35}s.holes=[];s.sink=0;s.nest=false;s.cn=[];s.pr=[];
  for(const d of cfg.type==4?[]:[-1,1])for(let j=0;j<6;j++)s.cn.push({x:-410+j*100,s:d,man:null,ld:false,t:rnd(6,12)});
  for(let k=0;k<(cfg.type==4?0:10);k++)s.pr.push({x:-300+(k%5)*120,y:-40+Math.floor(k/5)*80,job:null,pend:null,tg:null,carry:false,w:0,col:PC[k%3],bt:{x:30+(k%3)*50,y:[0,45,-45][k%3]},rs:{x:150+(k%3)*60,y:[-60,0,60][k%3]}})}
-function start(){musicStop();audioInit();if(AC)AC.resume();ambStart();ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],rg:[],gn:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=cfg.type==4?1.5:Math.min(W/330,H/170);bx=by=0;(document.querySelectorAll?document.querySelectorAll('#bar [data-k]'):[]).forEach(b=>{const k=b.dataset.k,g=cfg.type==4;b.style.display=g?(k==' '||k=='H'||k=='T'||k=='B'||k=='G'?'':'none'):(b.id=='gb'||b.id=='gg'?'none':'')});
+function start(){audioInit();if(AC)AC.resume();ambStart();musicStart();musicVol(.2);ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],rg:[],gn:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=cfg.type==4?1.5:Math.min(W/330,H/170);bx=by=0;(document.querySelectorAll?document.querySelectorAll('#bar [data-k]'):[]).forEach(b=>{const k=b.dataset.k,g=cfg.type==4;b.style.display=g?(k==' '||k=='H'||k=='T'||k=='B'||k=='G'?'':'none'):(b.id=='gb'||b.id=='gg'?'none':'')});
  cam={x:P.x,y:P.y,z:bz,r:-P.h};$('menu').style.display='none';$('lobby').style.display='none';$('bar').hidden=false}
 const cfg={ai:3,diff:3,type:0,slots:1,laps:3,lives:3,mins:5,goal:7000},DN=['','Cabin boy','Sailor','Captain','Commodore','Pirate King'],TN=['Last ship floating','Go for the gold (timed, most gold wins)','Ship race (laps around the island, with cannons)','Team gold (first team to bank the target)','Galley (timed, most kills wins)'],
 BN=['Red','Green','Gold','Violet','Orange','Teal','Pink'],RP=['Yarr, ye be sinking tonight!','Mind yer stern, mines be about.','Me cannons be hungry.','Fair winds, ye scurvy dog.','See ye at the bottom o the sea!'];
-function say(n,m){gmsg(n+': '+m);const d=document.createElement('div');d.textContent=n+': '+m;$('log').appendChild(d);$('log').scrollTop=1e9}
+function say(n,m){if(/\btom is\b/i.test(String(m)))egg();gmsg(n+': '+m);const d=document.createElement('div');d.textContent=n+': '+m;$('log').appendChild(d);$('log').scrollTop=1e9}
 function lob(){const h0=room?room.players.length:1,mn=h0>=2?0:1;$('sA').min=mn;$('sA').max=Math.max(1,8-h0);if(+$('sA').value<mn)$('sA').value=mn;if(+$('sA').value>8-h0)$('sA').value=Math.max(1,8-h0);cfg.ai=+$('sA').value;cfg.diff=+$('sD').value;cfg.type=+$('sT').value;cfg.laps=+$('sL').value;cfg.lives=+$('sLv').value;cfg.mins=+$('sM').value;cfg.goal=+$('sG').value;
  $('vA').textContent=cfg.ai;$('vD').textContent=DN[cfg.diff];$('vT').textContent=TN[cfg.type];$('vL').textContent=cfg.laps;$('vLv').textContent=cfg.lives;$('vM').textContent=cfg.mins;$('vG').textContent=cfg.goal;
  $('rL').style.display=cfg.type==2?'':'none';$('rLv').style.display=cfg.type==0||cfg.type==2?'':'none';$('rM').style.display=cfg.type==1||cfg.type==4?'':'none';$('rG').style.display=cfg.type==3?'':'none';
@@ -87,7 +87,7 @@ function lob(){const h0=room?room.players.length:1,mn=h0>=2?0:1;$('sA').min=mn;$
   let ta=pp.filter(p=>!p.team).length,tb=hn-ta;for(let i=0;i<an;i++){const t=ta<=tb?0:1;if(t)tb++;else ta++;mk(cols[t],'AI captain — '+DN[cfg.diff],COLS[t],1)}}
  else{for(let i=0;i<8;i++){const h=i<hn,a=!h&&i<hn+an;mk(pl,h?nm(pp[i]):a?'AI captain — '+DN[cfg.diff]:'Open slot',h||a?COLS[i]:'#555',h||a)}}}
 ['sA','sD','sT','sL','sLv','sM','sG'].forEach(i=>$(i).oninput=()=>{lob();sendCfg()});
-$('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob();watch();ambStop();audioInit();musicStart()};
+$('go').onclick=()=>{$('menu').style.display='none';$('lobby').style.display='flex';if(!$('log').children.length)say('Crew','Welcome aboard, Captain! Set your rules and chat while ye wait.');lob();watch();ambStop();audioInit();musicStart();musicVol(.4)};
 $('back').onclick=()=>{sessionStorage.removeItem('pf');musicStop();ambStop();if(room){tx({t:'leave'});ws.close()}$('lobby').style.display='none';$('menu').style.display='flex'};
 $('play').onclick=()=>{if(!room){NET=0;HUM=1;NS=0;start()}else if(room.host==room.you)tx({t:'start'});else say('System','Waiting for the host to start')};
 function send(){const v=$('ci').value.trim();if(!v)return;$('ci').value='';if(room){tx({t:'chat',text:v});return}say('You',v);setTimeout(()=>say(BN[Math.floor(Math.random()*Math.min(cfg.ai,7))]+' captain',RP[Math.floor(Math.random()*RP.length)]),700)}
@@ -362,10 +362,18 @@ let SG=null,sfxOn=localStorage.getItem('pf_sfx')!='0',AS=null;
 function audioInit(){if(AC)return 1;const C=typeof AudioContext!='undefined'?AudioContext:(typeof webkitAudioContext!='undefined'?webkitAudioContext:null);if(!C)return 0;
  AC=new C();MG=AC.createGain();MG.gain.value=.4;MG.connect(AC.destination);SG=AC.createGain();SG.gain.value=.8;SG.connect(AC.destination);
  NB=AC.createBuffer(1,AC.sampleRate*2|0,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return 1}
-function musicStart(){if(!musicOn||mg||!audioInit())return;AC.resume();mt=AC.currentTime+.1;ms=0;mg=setInterval(()=>{while(mt<AC.currentTime+.3){tick(ms,mt);mt+=.19;ms=(ms+1)%48}},50)}
-function musicStop(){if(mg){clearInterval(mg);mg=null}}
+function synthStart(){if(mg||!AC)return;mt=AC.currentTime+.1;ms=0;mg=setInterval(()=>{while(mt<AC.currentTime+.3){tick(ms,mt);mt+=.19;ms=(ms+1)%48}},50)}
+const PL=['music/track1_rolling_tide.mp3','music/track5_full_broadside.mp3'];let PLb={},PLi=-1,PLsrc=null,PLon=0,PLfail=0;
+function plNext(){if(!PLon||!musicOn||!AC)return;if(typeof fetch=='undefined'){PLfail=1;PLon=0;synthStart();return}
+ PLi=(PLi+1)%PL.length;const u=PL[PLi];
+ const go=b=>{if(!PLon||!musicOn)return;const s=AC.createBufferSource();s.buffer=b;s.connect(MG);s.onended=()=>{if(PLsrc===s){PLsrc=null;plNext()}};PLsrc=s;s.start()};
+ if(PLb[u])return go(PLb[u]);
+ fetch(u).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((ok,no)=>AC.decodeAudioData(a,ok,no))).then(b=>{PLb[u]=b;go(b)}).catch(()=>{PLfail=1;PLon=0;if(musicOn)synthStart()})}
+function musicStart(){if(!musicOn||!audioInit())return;AC.resume();if(PLon||mg)return;if(PLfail){synthStart();return}PLon=1;PLi=Math.floor(Math.random()*PL.length)-1;plNext()}
+function musicVol(v){if(MG&&AC)MG.gain.setTargetAtTime(v,AC.currentTime,.4)}
+function musicStop(){PLon=0;if(PLsrc){PLsrc.onended=null;try{PLsrc.stop()}catch(e){}PLsrc=null}if(mg){clearInterval(mg);mg=null}}
 $('mus').textContent=musicOn?'🔊 Music on':'🔇 Music off';
-$('mus').onclick=()=>{musicOn=!musicOn;localStorage.setItem('pf_music',musicOn?'1':'0');$('mus').textContent=musicOn?'🔊 Music on':'🔇 Music off';if(musicOn)musicStart();else musicStop()};
+$('mus').onclick=()=>{musicOn=!musicOn;localStorage.setItem('pf_music',musicOn?'1':'0');$('mus').textContent=musicOn?'🔊 Music on':'🔇 Music off';if(musicOn){musicStart();musicVol(started&&!over?.2:.4)}else musicStop();$('msb').textContent=musicOn?'🎵 Music':'🔇 Music'};$('msb').onclick=()=>$('mus').onclick();$('msb').textContent=musicOn?'🎵 Music':'🔇 Music';
 function nz(t,d,ty,f,v,dest){const s=AC.createBufferSource(),g=AC.createGain(),q=AC.createBiquadFilter();s.buffer=NB;q.type=ty;q.frequency.setValueAtTime(f,t);q.frequency.exponentialRampToValueAtTime(Math.max(60,f/4),t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(q);q.connect(g);g.connect(dest);s.start(t,Math.random());s.stop(t+d+.05)}
 function th(t,f0,f1,d,v,dest){const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(dest);o.start(t);o.stop(t+d+.05)}
 function sfx(k,v,pan){if(!AC||!sfxOn||v<.02)return;const t=AC.currentTime,o=AC.createGain();o.gain.value=v;
@@ -384,8 +392,17 @@ function ambStart(){if(!sfxOn||AS||!audioInit())return;const s=AC.createBufferSo
 function ambStop(){if(AS){AS.forEach(n=>{try{n.stop()}catch(e){}});AS=null}}
 $('snd').textContent=sfxOn?'🔊 Sound':'🔇 Sound';
 $('snd').onclick=()=>{sfxOn=!sfxOn;localStorage.setItem('pf_sfx',sfxOn?'1':'0');$('snd').textContent=sfxOn?'🔊 Sound':'🔇 Sound';if(sfxOn&&started&&!over)ambStart();else ambStop()};
+var eggT=0;const EGG_LINE='Arrr! Tom is a scurvy landlubber!';
+function grunt(){if(!AC||!SG)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain(),f1=AC.createBiquadFilter(),f2=AC.createBiquadFilter(),tr=AC.createOscillator(),tg=AC.createGain();
+ o.type='sawtooth';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(88,t+.7);
+ f1.type='bandpass';f1.frequency.value=650;f1.Q.value=4;f2.type='bandpass';f2.frequency.setValueAtTime(900,t);f2.frequency.linearRampToValueAtTime(1300,t+.6);f2.Q.value=5;
+ tr.frequency.value=32;tg.gain.value=.35;tr.connect(tg);tg.connect(g.gain);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.55,t+.08);g.gain.exponentialRampToValueAtTime(.0001,t+.8);
+ o.connect(f1);o.connect(f2);f1.connect(g);f2.connect(g);g.connect(SG);o.start(t);tr.start(t);o.stop(t+.85);tr.stop(t+.85)}
+function egg(){const n=Date.now();if(n-eggT<8000||!sfxOn)return;eggT=n;audioInit();if(AC)AC.resume();grunt();
+ setTimeout(()=>{try{if(typeof speechSynthesis=='undefined')return;const u=new SpeechSynthesisUtterance(EGG_LINE);u.pitch=.3;u.rate=.8;u.volume=1;u.lang='en-GB';
+  const vs=speechSynthesis.getVoices(),v=vs.find(x=>/^en[-_](GB|AU|IE)/i.test(x.lang)&&/daniel|james|oliver|arthur|male|george/i.test(x.name))||vs.find(x=>/^en/i.test(x.lang));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}},550)}
 let lt=0,gotList=0,SV=0;
-function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v7'},4000)})}
+function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v8'},4000)})}
 setInterval(()=>{if(!room&&$('lobby').style.display=='flex'&&ws&&ws.readyState==1)tx({t:'list'})},3000);
 function showRooms(l){if(room)return;gotList=1;clearTimeout(lt);$('ns').textContent='';const b=$('rooms');b.replaceChildren();
  if(!l.length){b.textContent='No open games right now. Create one and your friends will see it here.';return}
