@@ -14,4 +14,4 @@ Rooms, chat, shared settings and the host-started online game. The server runs t
 Free plans sleep when idle, so the first visit can take about a minute to wake up. Any host that runs Node and supports WebSockets works (Fly.io, Railway, a VPS).
 
 ## Checking that the server is up to date
-Open your site address followed by /healthz (for example https://your-app.onrender.com/healthz). It should say `ok server v4 · page v6`. If it shows an older version or just `ok`, or the page is missing, the newest server.js has not been deployed yet. Upload ALL files from the zip (server.js, sim.js, package.json, public/index.html), not just one.
+Open your site address followed by /healthz (for example https://your-app.onrender.com/healthz). It should say `ok server v4 · page v7`. If it shows an older version or just `ok`, or the page is missing, the newest server.js has not been deployed yet. Upload ALL files from the zip (server.js, sim.js, package.json, public/index.html), not just one.
