@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pirate Fleet</title>
-<meta name="pf-version" content="4">
+<meta name="pf-version" content="5">
 <style>
 :root{--bg:#0d4f7d;--fg:#f6e7b8;--panel:#2e180a;--gold:#d9a83f}
 @media (prefers-color-scheme:dark){:root{--bg:#0a3a5c}}
@@ -44,7 +44,7 @@ button:not(:disabled):hover{background:#6b3f1c}
 <div class="row" id="rG"><label>Gold to bank: <b id="vG">7000</b></label><input type="range" id="sG" min="3000" max="15000" step="1000" value="7000"></div>
 <div class="row"><label>Players in game</label><div id="plist"></div></div>
 <div id="log"></div><div class="cr"><input id="ci" placeholder="Chat with the crew..." maxlength="120"><button id="cs">Send</button></div>
-<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v4</div></div></div>
+<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v5 (with Galley)</div></div></div>
 <div id="gchat" hidden><div id="gl"></div><input id="gi" maxlength="120" placeholder="Enter sends, Esc closes" hidden></div>
 <div id="bar" hidden>
 <button data-k="H">? Controls (H)</button><button data-k="T">💬 Chat (T)</button>
@@ -379,7 +379,7 @@ function ambStop(){if(AS){AS.forEach(n=>{try{n.stop()}catch(e){}});AS=null}}
 $('snd').textContent=sfxOn?'🔊 Sound':'🔇 Sound';
 $('snd').onclick=()=>{sfxOn=!sfxOn;localStorage.setItem('pf_sfx',sfxOn?'1':'0');$('snd').textContent=sfxOn?'🔊 Sound':'🔇 Sound';if(sfxOn&&started&&!over)ambStart();else ambStop()};
 let lt=0,gotList=0,SV=0;
-function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v4'},4000)})}
+function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v5'},4000)})}
 setInterval(()=>{if(!room&&$('lobby').style.display=='flex'&&ws&&ws.readyState==1)tx({t:'list'})},3000);
 function showRooms(l){if(room)return;gotList=1;clearTimeout(lt);$('ns').textContent='';const b=$('rooms');b.replaceChildren();
  if(!l.length){b.textContent='No open games right now. Create one and your friends will see it here.';return}
