@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pirate Fleet</title>
-<meta name="pf-version" content="8">
+<meta name="pf-version" content="9">
 <style>
 :root{--bg:#0d4f7d;--fg:#f6e7b8;--panel:#2e180a;--gold:#d9a83f}
 @media (prefers-color-scheme:dark){:root{--bg:#0a3a5c}}
@@ -26,7 +26,7 @@ button:not(:disabled):hover{background:#6b3f1c}
 .btns{display:flex;justify-content:space-between;margin-top:14px}
 #plist{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}
 #gchat{position:fixed;left:12px;bottom:calc(112px + env(safe-area-inset-bottom,0px));width:min(380px,60%);z-index:5}#gl{font-size:13px;line-height:1.4;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none}#gl div{background:rgba(0,0,0,.35);padding:1px 6px;margin-top:2px;border-radius:4px}#gi{width:100%;box-sizing:border-box;margin-top:4px;font:inherit;padding:6px;border-radius:8px;border:2px solid var(--gold);background:#1c0f05;color:var(--fg)}
-</style></head><body>
+#tp{position:fixed;right:12px;top:150px;width:270px;z-index:6;background:rgba(20,10,4,.92);border:2px solid var(--gold);border-radius:10px;padding:10px;font-size:13px}#tp h3{margin:0 0 6px;font-size:15px}#tp .tr{margin:6px 0}#tp input{width:100%}#tp small{opacity:.8;display:block}#tp button{font-size:12px;padding:4px 10px;margin-top:6px}</style></head><body>
 <canvas id="c"></canvas>
 <div id="menu"><h1>☠ Pirate Fleet</h1><div id="t" style="font-size:22px"></div>
 <button id="go">Play — Open Lobby</button>
@@ -44,11 +44,11 @@ button:not(:disabled):hover{background:#6b3f1c}
 <div class="row" id="rG"><label>Gold to bank: <b id="vG">7000</b></label><input type="range" id="sG" min="3000" max="15000" step="1000" value="7000"></div>
 <div class="row"><label>Players in game</label><div id="plist"></div></div>
 <div id="log"></div><div class="cr"><input id="ci" placeholder="Chat with the crew..." maxlength="120"><button id="cs">Send</button></div>
-<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v8</div></div></div>
-<div id="gchat" hidden><div id="gl"></div><input id="gi" maxlength="120" placeholder="Enter sends, Esc closes" hidden></div>
+<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v9</div></div></div>
+<div id="tp" hidden></div><div id="gchat" hidden><div id="gl"></div><input id="gi" maxlength="120" placeholder="Enter sends, Esc closes" hidden></div>
 <div id="bar" hidden>
-<button data-k="H">? Controls (H)</button><button data-k="T">💬 Chat (T)</button>
-<button data-k="C">Man Cannon (C)</button><button data-k="L">Load (L)</button><button data-k="R">Repair (R)</button><button data-k="B">Bail (B)</button><button data-k="N">Crow's Nest (N)</button><button data-k=" ">🔥 Fire (Space)</button><button data-k="B" id="gb" style="display:none">⛽ Build rig (B)</button><button data-k="G" id="gg" style="display:none">🛡 Gunner (G)</button><button data-k="M">💣 Mine Crew (M)</button><button data-k="X">Drop Mine (X)</button><button data-k="O">🚣 Oar (O)</button><button id="msb">🎵 Music</button><button id="snd">🔊 Sound</button></div>
+<button data-k="H">? Controls (H)</button><button data-k="T">💬 Chat (T)</button><button data-k="P">⚙ Tune (P)</button>
+<button data-k="C">Man Cannon (C)</button><button data-k="L">Load (L)</button><button data-k="R">Repair (R)</button><button data-k="B" id="bb">Bail (B)</button><button data-k="N">Crow's Nest (N)</button><button data-k=" ">🔥 Fire (Space)</button><button data-k="B" id="gb" style="display:none">⛽ Build rig (B)</button><button data-k="G" id="gg" style="display:none">🛡 Gunner (G)</button><button data-k="M">💣 Mine Crew (M)</button><button data-k="X">Drop Mine (X)</button><button data-k="O">🚣 Oar (O)</button><button id="msb">🎵 Music</button><button id="snd">🔊 Sound</button></div>
 <script>var HUM=1,NS=0,NM=[],NET=0,TEAMS=[],EVQ=[];const KS=['C','L','R','B','N','O','M','X','G',' ','TAB'];
 
 const cv=document.getElementById('c'),c=cv.getContext('2d'),$=i=>document.getElementById(i);
@@ -67,15 +67,17 @@ function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300
  s.x=q[0]+rnd(-80,80);s.y=q[1]+rnd(-80,80);s.h=Math.atan2(1200-s.y,1200-s.x);
  if(cfg.type==2){if(!s.cp&&!s.lap){s.x=1330+(s.i%2)*300;s.y=1640+Math.floor(s.i/2)*140;s.h=Math.PI}else{const g=GT[(s.cp+3)%4];s.x=g.x+rnd(-60,60);s.y=g.y+rnd(-60,60);s.h=g.h}}
  if(cfg.type==3){const b=ISL[s.team];s.x=b.x+(1200-b.x)*.22+rnd(-100,100);s.y=b.y+(1200-b.y)*.22+rnd(-100,100);s.h=Math.atan2(1200-s.y,1200-s.x);s.gold=0}
- s.oars=[[350,-1,78],[350,1,78],[430,-1,58],[430,1,58]].map(a=>({x:a[0],s:a[1],y:a[1]*a[2],man:null}));s.by=null;s.st='';s.mm=2;s.mc=0;s.md={ld:false,mn:0};s.wp=[];s.thr=0;s.v=0;s.water=0;s.hp=5;s.ammo=10;s.gcd=0;s.gw=null;
+ s.oars=[[350,-1,78],[350,1,78],[430,-1,58],[430,1,58]].map(a=>({x:a[0],s:a[1],y:a[1]*a[2],man:null}));s.by=null;s.st='';s.mm=2;s.mc=0;s.md={ld:false,mn:0};s.wp=[];s.thr=0;s.v=0;s.water=0;s.hp=HPMAX();s.ammo=10;s.gcd=0;s.gw=null;
  if(cfg.type==4){const a=Math.random()*6.283,r=450+Math.random()*450;s.x=1200+Math.cos(a)*r;s.y=1200+Math.sin(a)*r;s.h=Math.random()*6.283;s.thr=.5;s.v=35}s.holes=[];s.sink=0;s.nest=false;s.cn=[];s.pr=[];
  for(const d of cfg.type==4?[]:[-1,1])for(let j=0;j<6;j++)s.cn.push({x:-410+j*100,s:d,man:null,ld:false,t:rnd(6,12)});
  for(let k=0;k<(cfg.type==4?0:10);k++)s.pr.push({x:-300+(k%5)*120,y:-40+Math.floor(k/5)*80,job:null,pend:null,tg:null,carry:false,w:0,col:PC[k%3],bt:{x:30+(k%3)*50,y:[0,45,-45][k%3]},rs:{x:150+(k%3)*60,y:[-60,0,60][k%3]}})}
 function start(){audioInit();if(AC)AC.resume();ambStart();musicStart();musicVol(.2);ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],rg:[],gn:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=cfg.type==4?1.5:Math.min(W/330,H/170);bx=by=0;(document.querySelectorAll?document.querySelectorAll('#bar [data-k]'):[]).forEach(b=>{const k=b.dataset.k,g=cfg.type==4;b.style.display=g?(k==' '||k=='H'||k=='T'||k=='B'||k=='G'?'':'none'):(b.id=='gb'||b.id=='gg'?'none':'')});
- cam={x:P.x,y:P.y,z:bz,r:-P.h};$('menu').style.display='none';$('lobby').style.display='none';$('bar').hidden=false}
+ cam={x:P.x,y:P.y,z:bz,r:-P.h};$('menu').style.display='none';$('lobby').style.display='none';$('bar').hidden=false;$('bb').style.display=cfg.type==4?'none':'';try{document.activeElement&&document.activeElement.blur()}catch(e){}}
 const cfg={ai:3,diff:3,type:0,slots:1,laps:3,lives:3,mins:5,goal:7000},DN=['','Cabin boy','Sailor','Captain','Commodore','Pirate King'],TN=['Last ship floating','Go for the gold (timed, most gold wins)','Ship race (laps around the island, with cannons)','Team gold (first team to bank the target)','Galley (timed, most kills wins)'],
 BN=['Red','Green','Gold','Violet','Orange','Teal','Pink'],RP=['Yarr, ye be sinking tonight!','Mind yer stern, mines be about.','Me cannons be hungry.','Fair winds, ye scurvy dog.','See ye at the bottom o the sea!'];
-function say(n,m){if(/\btom is\b/i.test(String(m)))egg();gmsg(n+': '+m);const d=document.createElement('div');d.textContent=n+': '+m;$('log').appendChild(d);$('log').scrollTop=1e9}
+const PW=['barnacles','scallywag','bilge rat','shiver me timbers','landlubber','blimey','scurvy dog','kraken bait','sea cucumber','poop deck','davy jones','salty seadog'];
+function cuss(t){return String(t).replace(/\b(f+u+c+k\w*|sh[i1]+t\w*|b[i1]tch\w*|d[a@]mn\w*|a+ss(?:hole|es)?|bastard\w*|cr[a@]p\w*|p[i1]ss\w*|d[i1]ck\w*|cunt\w*|bollocks|wank\w*|hell)\b/gi,()=>PW[Math.random()*PW.length|0])}
+function say(n,m){m=cuss(m);if(/\btom is\b/i.test(String(m)))egg();gmsg(n+': '+m);const d=document.createElement('div');d.textContent=n+': '+m;$('log').appendChild(d);$('log').scrollTop=1e9}
 function lob(){const h0=room?room.players.length:1,mn=h0>=2?0:1;$('sA').min=mn;$('sA').max=Math.max(1,8-h0);if(+$('sA').value<mn)$('sA').value=mn;if(+$('sA').value>8-h0)$('sA').value=Math.max(1,8-h0);cfg.ai=+$('sA').value;cfg.diff=+$('sD').value;cfg.type=+$('sT').value;cfg.laps=+$('sL').value;cfg.lives=+$('sLv').value;cfg.mins=+$('sM').value;cfg.goal=+$('sG').value;
  $('vA').textContent=cfg.ai;$('vD').textContent=DN[cfg.diff];$('vT').textContent=TN[cfg.type];$('vL').textContent=cfg.laps;$('vLv').textContent=cfg.lives;$('vM').textContent=cfg.mins;$('vG').textContent=cfg.goal;
  $('rL').style.display=cfg.type==2?'':'none';$('rLv').style.display=cfg.type==0||cfg.type==2?'':'none';$('rM').style.display=cfg.type==1||cfg.type==4?'':'none';$('rG').style.display=cfg.type==3?'':'none';
@@ -115,7 +117,7 @@ function pirates(s,dt){let nest=false,bail=0;s.md.mn=0;
  for(const p of s.pr){const j=p.job,mv=(tx,ty)=>{const dx=tx-p.x,dy=ty-p.y,d=Math.hypot(dx,dy);if(d<5)return true;const v=Math.min(d,110*dt);p.x+=dx/d*v;p.y+=dy/d*v;return false};
   if(j=='M')mv(p.tg.x,p.tg.y);
   else if(j=='C'){if(mv(p.tg.x,p.tg.s*62))p.tg.man=p}
-  else if(j=='L'){let k=p.tg;if(!k||k.ld)k=p.tg=need(s,p);if(!k)mv(-70,0);else if(!p.carry){if(mv(-70,0)){p.w+=dt;if(p.w>.6){p.w=0;p.carry=true}}}else if(mv(k.x,k.s*62)){k.ld=true;p.carry=false;p.tg=null}}
+  else if(j=='L'){let k=p.tg;if(!k||k.ld)k=p.tg=need(s,p);if(!k)mv(-70,0);else if(!p.carry){if(mv(-70,0)){p.w+=dt;if(p.w>.6/TUNE.fr){p.w=0;p.carry=true}}}else if(mv(k.x,k.s*62)){k.ld=true;p.carry=false;p.tg=null}}
   else if(j=='R'){let h=p.tg;if(!s.holes.includes(h)){const fh=s.holes.filter(x=>!s.pr.some(q=>q!=p&&q.job=='R'&&q.tg==x));h=p.tg=nearest(fh.length?fh:s.holes,p.x,p.y,1e9);if(!h)continue}
    if(mv(h.x,cp(h.y,105))){p.w+=dt;if(p.w>3){s.holes.splice(s.holes.indexOf(h),1);p.w=0;p.tg=null}}}
   else if(j=='B'){if(mv(p.tg.x,p.tg.y))bail++}
@@ -126,7 +128,7 @@ function pirates(s,dt){let nest=false,bail=0;s.md.mn=0;
 
 const keys={};
 function steer(s,dt){if(keys.w)s.thr=Math.min(1,s.thr+(cfg.type==4?.665:.5)*dt);if(keys.s)s.thr=Math.max(0,s.thr-(cfg.type==4?.665:.5)*dt);
- s.v+=(s.thr*MV()+s.oars.filter(o=>o.man).length*4-s.v)*Math.min(1,dt*(cfg.type==4?1.064:.8));
+ s.v+=(s.thr*MV()+s.oars.filter(o=>o.man).length*4-s.v)*Math.min(1,dt*(cfg.type==4?1.064:.8)*TUNE.acc);
  const turn=((keys.d?1:0)-(keys.a?1:0))*(cfg.type==4?1.125:.55)*(.3+.7*Math.min(1,s.v/MV()));
  s.h+=turn*dt;s.x+=Math.cos(s.h)*s.v*dt;s.y+=Math.sin(s.h)*s.v*dt}
 function step(s,dt){
@@ -135,10 +137,10 @@ function step(s,dt){
  let want=null,bail=0;
  if(s.ai){want=cfg.type==4?gai(s,dt):ai(s,dt);bail=pirates(s,dt)}
  else{steer(s,dt);bail=pirates(s,dt)}
- if(want!=null){const v=cfg.type==4?(40+cfg.diff*6)*1.29:s.ai?(14+cfg.diff*3)*(s.mul||1)+s.oars.filter(o=>o.man).length*2:36;s.sp=v;s.h+=cp(ang(want-s.h),(cfg.type==4?1.375:s.ai?.2+cfg.diff*.03:.5)*dt);s.x+=Math.cos(s.h)*v*dt;s.y+=Math.sin(s.h)*v*dt}
+ if(want!=null){const v=TUNE.spd*(cfg.type==4?(40+cfg.diff*6)*1.29:s.ai?(14+cfg.diff*3)*(s.mul||1)+s.oars.filter(o=>o.man).length*2:36);s.sp=v;s.h+=cp(ang(want-s.h),(cfg.type==4?1.375:s.ai?.2+cfg.diff*.03:.5)*dt);s.x+=Math.cos(s.h)*v*dt;s.y+=Math.sin(s.h)*v*dt}
  s.x=Math.max(60,Math.min(WS-60,s.x));s.y=Math.max(60,Math.min(WS-60,s.y));
  for(const o of ISL){const dx=s.x-o.x,dy=s.y-o.y,d=Math.hypot(dx,dy)||1,R=o.r+60;if(d<R){s.x=o.x+dx/d*R;s.y=o.y+dy/d*R}}
- s.water=Math.max(0,s.water+s.holes.length*dt-bail*.5*dt);
+ s.water=Math.max(0,s.water+s.holes.length*dt/TUNE.hp-bail*.5*dt);
  if(cfg.type==4)gcoast(s);
  if(s.water>=1000){s.sink=3;fx(s.x,s.y,'s');if(s.by&&s.by!=s)s.by.k=(s.by.k||0)+1;s.dd=(s.dd||0)+1;if((cfg.type==1||cfg.type==3)&&s.gold>0){G.ch.push({x:s.x,y:s.y,v:s.gold});s.gold=0}}}
 
@@ -268,8 +270,8 @@ function draw(){c.setTransform(1,0,0,1,0,0);c.fillStyle='#0a3a5c';c.fillRect(0,0
 
 function hud(){if(NET){c.fillStyle='rgba(255,255,255,.6)';c.font='11px sans-serif';c.fillText('fps '+fps+' · snaps/s '+sps+' · buf '+buf.length+' · dly '+(dl*1000|0)+'ms',16,126)}c.fillStyle='rgba(30,16,6,.8)';c.fillRect(12,84,300,26);c.strokeStyle='#d9a83f';c.lineWidth=2;c.strokeRect(12,84,300,26);c.fillStyle='#d9a83f';c.fillRect(18,90,288*P.thr,14);c.fillStyle='#fff';c.font='12px sans-serif';c.fillText((cfg.type==4?'Throttle '+(P.thr*100|0)+'%  Speed '+(P.v|0)+'  (B rig · G gunner)':'Thr '+(P.thr*100|0)+'%  Spd '+P.v.toFixed(0)+'  Mine '+(P.md.ld?'READY':'empty')+' '+P.md.mn+'/2  Oars '+P.oars.filter(o=>o.man).length+'/4'),24,101);
  c.fillStyle='rgba(30,16,6,.8)';c.fillRect(12,12,300,64);c.strokeStyle='#d9a83f';c.lineWidth=2;c.strokeRect(12,12,300,64);
- const w=cfg.type==4?1-P.hp/5:P.water/1000;c.fillStyle='#123';c.fillRect(20,20,284,18);c.fillStyle=w>.7?'#e04040':'#3aa0d8';c.fillRect(20,20,284*w,18);
- c.fillStyle='#fff';c.font='13px sans-serif';c.fillText((cfg.type==4?`Hull ${P.hp} / 5`:`Water ${P.water.toFixed(0)} / 1000 gal`),26,34);
+ const w=cfg.type==4?1-P.hp/HPMAX():P.water/1000;c.fillStyle='#123';c.fillRect(20,20,284,18);c.fillStyle=w>.7?'#e04040':'#3aa0d8';c.fillRect(20,20,284*w,18);
+ c.fillStyle='#fff';c.font='13px sans-serif';c.fillText((cfg.type==4?`Hull ${P.hp} / ${HPMAX()}`:`Water ${P.water.toFixed(0)} / 1000 gal`),26,34);
  c.fillText(`${cfg.type==4?'Hull '+P.hp+'/5':'Holes '+P.holes.length}   ${cfg.type==1?'Gold '+(P.gold|0)+'  Time '+Math.max(0,G.clock|0)+'s':cfg.type==2?'Lap '+Math.min(cfg.laps,P.lap+1)+'/'+cfg.laps+'  Gate '+(P.cp+1)+'/4  Place '+place(P)+'/'+G.sh.length+'  Ships '+P.lives:cfg.type==3?'Carrying '+(P.gold|0)+'  Sunk '+(P.k||0):cfg.type==4?'Ammo '+P.ammo+'/30  Rigs '+G.rg.filter(r=>r.o==P.i&&r.hp>0).length+'/5  Guns '+G.gn.filter(g=>g.o==P.i&&g.hp>0).length+'/2  Time '+Math.floor(Math.max(0,G.clock)/60)+':'+('0'+((Math.max(0,G.clock)|0)%60)).slice(-2):'Ships left '+P.lives+'  Rivals '+G.sh.filter(s=>s.i&&!s.dead).length}`,20,62);
  const hint=cfg.type==4?'W/S speed · A/D turn · Space fires left side · B builds an oil rig (max 5) · G posts a gunner (max 2, costs 7 cannonballs) · sail near any rig to collect oil · T chat':'W/S throttle · A/D turn · click pirate, right-click a cannon to man it, L/R/B/N = auto jobs, Tab = swap gun crews to the other side · wheel zoom · drag/arrows look · Space fire · T chat';
  c.font='15px Georgia';c.textAlign='left';c.fillStyle='#f6e7b8';c.strokeStyle='#000';c.lineWidth=4;const hx=330,hw=Math.max(200,W-hx-200);if(showHelp){c.strokeText(hint,hx,28,hw);c.fillText(hint,hx,28,hw)}
@@ -303,7 +305,7 @@ cv.onmousedown=e=>{if(!G||over)return;const w=s2w(e.clientX,e.clientY);
   else{free(sel);if(j=='B'){sel.job='B';sel.tg={x:cp(l.x,540),y:cp(l.y,110)};note('Pirate will bail from here')}else if(j=='N'){sel.job='N'}else{sel.job='M';sel.tg={x:cp(l.x,540),y:cp(l.y,115)}}}
   if(ok)sel.pend=null}};
 function setMode(m){if(m!='map')started=true;mode=m;if(m!='build')sel=null;if(m=='battle')bx=by=0}
-function key(k){if(!G||over)return;k=k.toUpperCase();if(k=='T'){openChat();return}if(NET&&KS.includes(k)){tx({t:'key',k,pi:P.pr.indexOf(sel)});return}if(cfg.type==4){if(k==' ')gFire(P);else if(k=='B')gBuild(P);else if(k=='G')gGun(P);return}
+function key(k){if(!G||over)return;k=k.toUpperCase();if(k=='T'){openChat();return}if(k=='H'){showHelp=!showHelp;return}if(k=='P'){toggleTune();return}if(NET&&KS.includes(k)){tx({t:'key',k,pi:P.pr.indexOf(sel)});return}if(cfg.type==4){if(k==' ')gFire(P);else if(k=='B')gBuild(P);else if(k=='G')gGun(P);return}
  if(k=='F')bx=by=0;else if(k=='H')showHelp=!showHelp;else if(k=='TAB'){let n=0;for(const p of P.pr)if(p.job=='C'&&p.tg){const o=P.cn.find(q=>q.x==p.tg.x&&q.s==-p.tg.s);if(o){free(p);p.job='C';p.tg=o;n++}}note(n?'Gun crews switching to the other side':'No gun crews to switch')}
  else if(k==' '){for(const q of P.cn)if(q.man&&q.ld&&P.sink<=0)fire(P,q)}
  else if(k=='X')dropMine(P)
@@ -311,7 +313,7 @@ function key(k){if(!G||over)return;k=k.toUpperCase();if(k=='T'){openChat();retur
  else if(k=='O'){if(!sel)return note('Left-click a pirate first');assignOar(sel)}
  else if('CLRBN'.includes(k)){if(!sel)return note('Left-click a pirate first');
   if(k=='N'||k=='L'||k=='R'||k=='B'){free(sel);sel.job=k;sel.tg=null;sel.pend=null;if(k=='B'){const n=P.pr.filter(q=>q!=sel&&q.job=='B').length;sel.tg={x:30+Math.floor(n/3)*50,y:[0,45,-45][n%3]}}note({N:'Pirate heading to the crows nest',L:'Loader will keep empty cannons stocked',R:'Repairer will patch holes automatically',B:'Pirate heading to mid-ship to bail'}[k])}else{sel.pend=k;note({C:'Now right-click a cannon to man it',L:'Now right-click a cannon to load it',R:'Now right-click a hole to repair it',B:'Now right-click the deck spot to bail from'}[k])}}}
-onkeydown=e=>{if(e.key=='Tab'||e.key==' '||e.key.startsWith('Arrow')||(NET&&(e.key=='t'||e.key=='T')))e.preventDefault();
+onkeydown=e=>{if(e.key=='Tab'||e.key==' '||e.key.startsWith('Arrow')||((e.key=='t'||e.key=='T')&&G&&!over))e.preventDefault();
  if(G){if(e.key=='f'||e.key=='F')bx=by=0;const m={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(m){const co=Math.cos(cam.r),si=Math.sin(cam.r),f=80/cam.z;bx=cp(bx+(m[0]*co+m[1]*si)*f,WS);by=cp(by+(-m[0]*si+m[1]*co)*f,WS)}}
  keys[e.key.toLowerCase()]=1;if(NET)sendIn();if(!(e.key=='Tab'&&e.repeat))key(e.key)};
 onkeyup=e=>{delete keys[e.key.toLowerCase()];if(NET)sendIn()};
@@ -329,7 +331,7 @@ function onNet(m){
   if(!host&&m.cfg)for(const k of SL)if(m.cfg[SM[k]]!=null)$(k).value=m.cfg[SM[k]];
   SL.forEach(i=>$(i).disabled=!host);
   $('ns').textContent='You are in a game lobby'+(host?' (host)':'')+'. Friends can join from this page: '+location.origin+location.pathname;$('rooms').textContent='';lob();if(host&&m.cfg&&m.cfg.ai!=null&&cfg.ai!=m.cfg.ai)sendCfg()}
- else if(m.t=='hello')SV=m.v;else if(m.t=='rooms')showRooms(m.rooms);else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d,m.n);else if(m.t=='note')note(m.text);else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
+ else if(m.t=='hello')SV=m.v;else if(m.t=='rooms')showRooms(m.rooms);else if(m.t=='start')startNet(m);else if(m.t=='snap')applySnap(m.d,m.n);else if(m.t=='note')note(m.text);else if(m.t=='tune'){Object.assign(TUNE,m.v);tpDraw()}else if(m.t=='chat')say(m.from,m.text);else if(m.t=='sys')say('System',m.text);else if(m.t=='err')$('ns').textContent=m.msg}
 $('nm').value=localStorage.getItem('pf_name')||'Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
 let lastIn='';
@@ -362,14 +364,14 @@ let SG=null,sfxOn=localStorage.getItem('pf_sfx')!='0',AS=null;
 function audioInit(){if(AC)return 1;const C=typeof AudioContext!='undefined'?AudioContext:(typeof webkitAudioContext!='undefined'?webkitAudioContext:null);if(!C)return 0;
  AC=new C();MG=AC.createGain();MG.gain.value=.4;MG.connect(AC.destination);SG=AC.createGain();SG.gain.value=.8;SG.connect(AC.destination);
  NB=AC.createBuffer(1,AC.sampleRate*2|0,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return 1}
-function synthStart(){if(mg||!AC)return;mt=AC.currentTime+.1;ms=0;mg=setInterval(()=>{while(mt<AC.currentTime+.3){tick(ms,mt);mt+=.19;ms=(ms+1)%48}},50)}
-const PL=['music/track1_rolling_tide.mp3','music/track5_full_broadside.mp3'];let PLb={},PLi=-1,PLsrc=null,PLon=0,PLfail=0;
+let sl=0;function synthStart(n){if(mg||!AC)return;mt=AC.currentTime+.1;ms=0;sl=0;mg=setInterval(()=>{while(mt<AC.currentTime+.3){tick(ms,mt);mt+=.19;ms=(ms+1)%48;if(ms==0&&n&&++sl>=n){clearInterval(mg);mg=null;if(PLon)setTimeout(plNext,Math.max(0,(mt-AC.currentTime)*1000));return}}},50)}
+const PL=['synth','music/track1_rolling_tide.mp3','music/track5_full_broadside.mp3'];let PLb={},PLi=-1,PLsrc=null,PLon=0,PLfail=0;
 function plNext(){if(!PLon||!musicOn||!AC)return;if(typeof fetch=='undefined'){PLfail=1;PLon=0;synthStart();return}
- PLi=(PLi+1)%PL.length;const u=PL[PLi];
+ PLi=(PLi+1)%PL.length;const u=PL[PLi];if(u=='synth'){synthStart(8);return}
  const go=b=>{if(!PLon||!musicOn)return;const s=AC.createBufferSource();s.buffer=b;s.connect(MG);s.onended=()=>{if(PLsrc===s){PLsrc=null;plNext()}};PLsrc=s;s.start()};
  if(PLb[u])return go(PLb[u]);
  fetch(u).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((ok,no)=>AC.decodeAudioData(a,ok,no))).then(b=>{PLb[u]=b;go(b)}).catch(()=>{PLfail=1;PLon=0;if(musicOn)synthStart()})}
-function musicStart(){if(!musicOn||!audioInit())return;AC.resume();if(PLon||mg)return;if(PLfail){synthStart();return}PLon=1;PLi=Math.floor(Math.random()*PL.length)-1;plNext()}
+function musicStart(){if(!musicOn||!audioInit())return;AC.resume();if(PLon||mg)return;if(PLfail){synthStart();return}PLon=1;PLi=-1;plNext()}
 function musicVol(v){if(MG&&AC)MG.gain.setTargetAtTime(v,AC.currentTime,.4)}
 function musicStop(){PLon=0;if(PLsrc){PLsrc.onended=null;try{PLsrc.stop()}catch(e){}PLsrc=null}if(mg){clearInterval(mg);mg=null}}
 $('mus').textContent=musicOn?'🔊 Music on':'🔇 Music off';
@@ -398,11 +400,14 @@ function grunt(){if(!AC||!SG)return;const t=AC.currentTime,o=AC.createOscillator
  f1.type='bandpass';f1.frequency.value=650;f1.Q.value=4;f2.type='bandpass';f2.frequency.setValueAtTime(900,t);f2.frequency.linearRampToValueAtTime(1300,t+.6);f2.Q.value=5;
  tr.frequency.value=32;tg.gain.value=.35;tr.connect(tg);tg.connect(g.gain);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.55,t+.08);g.gain.exponentialRampToValueAtTime(.0001,t+.8);
  o.connect(f1);o.connect(f2);f1.connect(g);f2.connect(g);g.connect(SG);o.start(t);tr.start(t);o.stop(t+.85);tr.stop(t+.85)}
-function egg(){const n=Date.now();if(n-eggT<8000||!sfxOn)return;eggT=n;audioInit();if(AC)AC.resume();grunt();
- setTimeout(()=>{try{if(typeof speechSynthesis=='undefined')return;const u=new SpeechSynthesisUtterance(EGG_LINE);u.pitch=.3;u.rate=.8;u.volume=1;u.lang='en-GB';
-  const vs=speechSynthesis.getVoices(),v=vs.find(x=>/^en[-_](GB|AU|IE)/i.test(x.lang)&&/daniel|james|oliver|arthur|male|george/i.test(x.name))||vs.find(x=>/^en/i.test(x.lang));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}},550)}
+const CLIPS=[['g','Arrr! Tom is a scurvy landlubber!',.3,.8],['p','Squawk! Tom be swabbin the deck all wrong!',1.9,1.1],['g','Tom enjoys the company of other pirates.',.25,.75],['b','Shiver me timbers! Tom is lost at sea again!',.35,.85],['p','Polly wants a cracker! Tom wants a nap!',1.8,1.15],['g','Yo ho ho! Tom has been feedin the fishes with his cookin!',.3,.9]];let eggI=0;
+function squawk(){if(!AC||!SG)return;const t=AC.currentTime;for(let i=0;i<3;i++){const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.setValueAtTime(2100,t+i*.13);o.frequency.exponentialRampToValueAtTime(900,t+i*.13+.1);g.gain.setValueAtTime(.0001,t+i*.13);g.gain.linearRampToValueAtTime(.22,t+i*.13+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.13+.11);o.connect(g);g.connect(SG);o.start(t+i*.13);o.stop(t+i*.13+.12)}}
+function boom(){if(!AC||!SG)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(30,t+.5);g.gain.setValueAtTime(.7,t);g.gain.exponentialRampToValueAtTime(.0001,t+.55);o.connect(g);g.connect(SG);o.start(t);o.stop(t+.6)}
+function egg(){const n=Date.now();if(n-eggT<6000||!sfxOn)return;eggT=n;audioInit();if(AC)AC.resume();const cl=CLIPS[eggI++%CLIPS.length];({g:grunt,p:squawk,b:boom})[cl[0]]();
+ setTimeout(()=>{try{if(typeof speechSynthesis=='undefined')return;const u=new SpeechSynthesisUtterance(cl[1]);u.pitch=cl[2];u.rate=cl[3];u.volume=1;u.lang='en-GB';
+  const vs=speechSynthesis.getVoices(),v=vs.find(x=>/^en[-_](GB|AU|IE)/i.test(x.lang)&&/daniel|james|oliver|arthur|male|george/i.test(x.name))||vs.find(x=>/^en/i.test(x.lang));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}},cl[0]=='g'?550:450)}
 let lt=0,gotList=0,SV=0;
-function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v8'},4000)})}
+function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v9'},4000)})}
 setInterval(()=>{if(!room&&$('lobby').style.display=='flex'&&ws&&ws.readyState==1)tx({t:'list'})},3000);
 function showRooms(l){if(room)return;gotList=1;clearTimeout(lt);$('ns').textContent='';const b=$('rooms');b.replaceChildren();
  if(!l.length){b.textContent='No open games right now. Create one and your friends will see it here.';return}
@@ -410,13 +415,24 @@ function showRooms(l){if(room)return;gotList=1;clearTimeout(lt);$('ns').textCont
   const t=document.createElement('span');t.style.flex='1';t.textContent=r.host+"'s game · "+r.n+'/8 players · '+(TN[r.type]||'').split(' (')[0]+' · '+(r.state=='lobby'?'waiting':'in progress');
   const j=document.createElement('button');j.textContent=r.state=='lobby'?'Join':'In progress';j.disabled=r.state!='lobby'||r.n>=8;j.style.cssText='font-size:12px;padding:3px 10px;border-width:2px';
   j.onclick=()=>tx({t:'join',code:r.code,name:$('nm').value});d.append(t,j);b.appendChild(d)})}
+
+const TD=[['spd','Speed',()=>'top speed '+MV().toFixed(0)],['acc','Acceleration',()=>'response rate '+((cfg.type==4?1.064:.8)*TUNE.acc).toFixed(2)],['hp','Health',()=>cfg.type==4?'hull '+HPMAX()+' hits':'water fills x'+(1/TUNE.hp).toFixed(2)+' speed'],['fr','Fire rate',()=>cfg.type==4?'cooldown '+(.7/TUNE.fr).toFixed(2)+'s (gunners '+(2.4/TUNE.fr).toFixed(1)+'s)':'loading wait '+(.6/TUNE.fr).toFixed(2)+'s']];
+function tpDraw(){const p=$('tp');if(p.hidden)return;p.replaceChildren();const h3=document.createElement('h3');h3.textContent='Tuning (P to close)'+(NET?' - host only':'');p.appendChild(h3);
+ for(const [k,l,f] of TD){const d=document.createElement('div');d.className='tr';const t=document.createElement('div');t.textContent=l+': x'+TUNE[k].toFixed(2);const i=document.createElement('input');i.type='range';i.min=.2;i.max=3;i.step=.05;i.value=TUNE[k];
+  const s=document.createElement('small');s.textContent=f();
+  i.oninput=()=>{TUNE[k]=+i.value;t.textContent=l+': x'+TUNE[k].toFixed(2);s.textContent=f();tpSend()};i.onchange=()=>i.blur();d.append(t,i,s);p.appendChild(d)}
+ const r=document.createElement('button');r.textContent='Reset to 1.00';r.onclick=()=>{TUNE.spd=TUNE.acc=TUNE.hp=TUNE.fr=1;tpSend();tpDraw();r.blur()};p.appendChild(r);
+ const o=document.createElement('small');o.id='tpo';o.style.marginTop='6px';o.textContent=tpTxt();p.appendChild(o)}
+const tpTxt=()=>'Values: speed x'+TUNE.spd.toFixed(2)+', accel x'+TUNE.acc.toFixed(2)+', health x'+TUNE.hp.toFixed(2)+', fire rate x'+TUNE.fr.toFixed(2);
+function tpSend(){if(NET)tx({t:'tune',v:TUNE});const o=$('tpo');if(o)o.textContent=tpTxt()}
+function toggleTune(){if(!G||over)return;const p=$('tp');p.hidden=!p.hidden;tpDraw()}
 const GM=[];let chatOn=0;
 function gmsg(t){GM.push([t,Date.now()]);if(GM.length>30)GM.shift();gr()}
-function gr(){$('gchat').hidden=!(NET&&G&&!over);const n=Date.now(),l=GM.filter(x=>chatOn||n-x[1]<10000).slice(chatOn?-12:-6);$('gl').replaceChildren(...l.map(x=>{const d=document.createElement('div');d.textContent=x[0];return d}))}
+function gr(){$('gchat').hidden=!(G&&!over);const n=Date.now(),l=GM.filter(x=>chatOn||n-x[1]<10000).slice(chatOn?-12:-6);$('gl').replaceChildren(...l.map(x=>{const d=document.createElement('div');d.textContent=x[0];return d}))}
 setInterval(gr,1000);
-function openChat(){if(!NET||chatOn)return;chatOn=1;for(const k in keys)delete keys[k];sendIn();$('gi').hidden=false;$('gi').focus();gr()}
+function openChat(){if(!G||over||chatOn)return;chatOn=1;for(const k in keys)delete keys[k];sendIn();$('gi').hidden=false;$('gi').focus();gr()}
 function closeChat(){chatOn=0;$('gi').hidden=true;$('gi').value='';$('gi').blur();gr()}
-$('gi').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter'){const v=$('gi').value.trim();if(v)tx({t:'chat',text:v});closeChat()}else if(e.key=='Escape')closeChat()};
+$('gi').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter'){const v=$('gi').value.trim();if(v){if(NET)tx({t:'chat',text:v});else say($('nm').value||'Captain',v)}closeChat()}else if(e.key=='Escape')closeChat()};
 function interp(dt){const L=buf[buf.length-1];if(!L)return;const tg=L.t-dl;
  if(!rt||Math.abs(rt-tg)>.6)rt=tg;else{rt+=dt;rt+=(tg-rt)*Math.min(1,dt*2)}
  while(buf.length>2&&buf[1].t<=rt)buf.shift();
@@ -424,13 +440,14 @@ function interp(dt){const L=buf[buf.length-1];if(!L)return;const tg=L.t-dl;
  a.s.forEach((p,i)=>{const q=b.s[i],s=G.sh[i];if(!s)return;s.x=l(p[0],q[0]);s.y=l(p[1],q[1]);s.h=p[2]+ang(q[2]-p[2])*f;
   p[19].forEach((u,j)=>{const w=q[19][j],o=s.pr[j];if(o&&w){o.x=l(u[0],w[0]);o.y=l(u[1],w[1])}})});
  const e=rt-L.t;G.pj=L.p.map(p=>({x:p[0]+p[2]*e,y:p[1]+p[3]*e}))}
-function MV(){return cfg.type==4?90:36}
+var TUNE={spd:1,acc:1,hp:1,fr:1};function HPMAX(){return Math.max(1,Math.round(5*TUNE.hp))}
+function MV(){return (cfg.type==4?90:36)*TUNE.spd}
 function GTOP(){return G.sh.reduce((a,s)=>((s.k|0)>(a.k|0)||((s.k|0)==(a.k|0)&&(s.dd|0)<(a.dd|0)))?s:a)}
 function GN(s,t){if(typeof NT=='function')NT(s.i,t);else if(s==P)note(t)}
 function coast(t,k){return 210+34*Math.sin(t/150+k*1.7)+22*Math.sin(t/61+k)}
 function cdepth(x,y){return Math.max(coast(y,0)-x,coast(x,1)-y,coast(y,2)-(WS-x),coast(x,3)-(WS-y))}
 function gcoast(s){const R=48;let p;if((p=coast(s.y,0)-s.x+R)>0)s.x+=p;if((p=coast(s.x,1)-s.y+R)>0)s.y+=p;if((p=coast(s.y,2)-(WS-s.x)+R)>0)s.x-=p;if((p=coast(s.x,3)-(WS-s.y)+R)>0)s.y-=p}
-function gFire(s){if(s.ammo<=0||s.gcd>0||s.sink>0||s.dead)return;s.ammo--;s.gcd=.7;const dx=Math.sin(s.h),dy=-Math.cos(s.h);G.pj.push({x:s.x+dx*22,y:s.y+dy*22,vx:dx*520,vy:dy*520,t:.594,o:s});fx(s.x+dx*22,s.y+dy*22,'f')}
+function gFire(s){if(s.ammo<=0||s.gcd>0||s.sink>0||s.dead)return;s.ammo--;s.gcd=.7/TUNE.fr;const dx=Math.sin(s.h),dy=-Math.cos(s.h);G.pj.push({x:s.x+dx*22,y:s.y+dy*22,vx:dx*520,vy:dy*520,t:.594,o:s});fx(s.x+dx*22,s.y+dy*22,'f')}
 function gBuild(s){if(s.dead||s.sink>0)return;
  const sd=[[coast(s.y,0)-s.x,0],[coast(s.x,1)-s.y,1],[coast(s.y,2)-(WS-s.x),2],[coast(s.x,3)-(WS-s.y),3]].sort((a,b)=>b[0]-a[0])[0];
  if(-sd[0]>170)return GN(s,'Sail closer to the shore to build an oil rig');
@@ -452,7 +469,7 @@ function gtick(dt){for(const s of G.sh)if(s.gcd>0)s.gcd-=dt;
   for(const s of G.sh){if(s.dead||s.sink>0||s.ammo>=30||r.oil<1)continue;if(Math.hypot(s.x-r.x,s.y-r.y)<140){const n=Math.min(Math.floor(r.oil),30-s.ammo);s.ammo+=n;r.oil-=n;GN(s,'Picked up '+n+' oil: +'+n+' cannonballs'+(r.o!=s.i?' (from an enemy rig)':''))}}}
  for(const g of G.gn){if(g.hp<=0)continue;g.cd-=dt;let t=null,bd=1e9;for(const s of G.sh){if(s.i==g.o||s.dead||s.sink>0)continue;const d=Math.hypot(s.x-g.x,s.y-g.y);if(d<bd){bd=d;t=s}}
   if(t&&bd<330){const tv=t.ai?(t.sp||0):(t.v||0),vx=Math.cos(t.h)*tv,vy=Math.sin(t.h)*tv;let tt=bd/520,px=t.x+vx*tt,py=t.y+vy*tt;tt=Math.hypot(px-g.x,py-g.y)/520;px=t.x+vx*tt;py=t.y+vy*tt;
-   if(Math.hypot(px-g.x,py-g.y)<300){g.a=Math.atan2(py-g.y,px-g.x);if(g.cd<=0){g.cd=2.4;const a=g.a+(Math.random()-.5)*.08,bx=g.x+Math.cos(a)*28,by=g.y+Math.sin(a)*28;G.pj.push({x:bx,y:by,vx:Math.cos(a)*520,vy:Math.sin(a)*520,t:.594,o:G.sh[g.o]});fx(bx,by,'f')}}else g.a=g.a0}else g.a=g.a0}
+   if(Math.hypot(px-g.x,py-g.y)<300){g.a=Math.atan2(py-g.y,px-g.x);if(g.cd<=0){g.cd=2.4/TUNE.fr;const a=g.a+(Math.random()-.5)*.08,bx=g.x+Math.cos(a)*28,by=g.y+Math.sin(a)*28;G.pj.push({x:bx,y:by,vx:Math.cos(a)*520,vy:Math.sin(a)*520,t:.594,o:G.sh[g.o]});fx(bx,by,'f')}}else g.a=g.a0}else g.a=g.a0}
  G.rg=G.rg.filter(r=>r.hp>0);G.gn=G.gn.filter(g=>g.hp>0)}
 function gai(s,dt){const E=G.sh.filter(o=>o!=s&&!o.dead&&o.sink<=0),mine=G.rg.filter(r=>r.o==s.i&&r.hp>0),en=G.rg.filter(r=>r.o!=s.i&&r.hp>0),dd=o=>Math.hypot(o.x-s.x,o.y-s.y);
  const t=E.sort((a,b)=>dd(a)-dd(b))[0],er=en.sort((a,b)=>dd(a)-dd(b))[0],orr=G.rg.filter(r=>r.hp>0&&r.oil>=1).sort((a,b)=>dd(a)-dd(b))[0],wg=mine.length>=1&&s.ammo>=10&&G.gn.filter(g=>g.o==s.i&&g.hp>0).length<2;let want=null;

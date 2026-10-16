@@ -10,6 +10,8 @@ const srv=http.createServer((q,r)=>{
  fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end('Not found');return}r.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream','Cache-Control':path.extname(f)=='.mp3'?'public, max-age=86400':'no-store'});r.end(d)})});
 const wss=new WebSocketServer({server:srv,maxPayload:4096}),rooms=new Map();let nid=1;
 const mkCode=()=>{let c;do{c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('')}while(rooms.has(c));return c};
+const PW=['barnacles','scallywag','bilge rat','shiver me timbers','landlubber','blimey','scurvy dog','kraken bait','sea cucumber','poop deck','davy jones','salty seadog'];
+const cuss=t=>String(t).replace(/\b(f+u+c+k\w*|sh[i1]+t\w*|b[i1]tch\w*|d[a@]mn\w*|a+ss(?:hole|es)?|bastard\w*|cr[a@]p\w*|p[i1]ss\w*|d[i1]ck\w*|cunt\w*|bollocks|wank\w*|hell)\b/gi,()=>PW[Math.random()*PW.length|0]);
 const clean=(s,n)=>String(s||'').replace(/[<>]/g,'').trim().slice(0,n);
 const cf=c=>{const o={};for(const k of['ai','diff','type','laps','lives','mins','goal'])if(Number.isFinite(+(c&&c[k])))o[k]=+c[k];return o};
 const send=(ws,o)=>{if(ws.readyState==1)ws.send(JSON.stringify(o))};
@@ -29,9 +31,9 @@ function startGame(rm){
  {let a=teams.filter(t=>!t).length,b=teams.length-a;for(let i=0;i<ai;i++){if(a<=b){teams.push(0);a++}else{teams.push(1);b++}}}
  const names=[...rm.ps.map(p=>p.name),...Array.from({length:ai},(_,i)=>'AI '+(rm.cfg.type==3?CN[teams[hum+i]]+' '+(i+1):CN[hum+i]))];
  const ctx=vm.createContext({document:{getElementById:stub,createElement:stub},innerWidth:1280,innerHeight:720,location:{search:'',protocol:'http:',host:'x',origin:'x'},requestAnimationFrame(){},Path2D:function(){},URLSearchParams,WebSocket:function(){}});
- vm.runInContext(SIM,ctx);
+ vm.runInContext(SIM,ctx);if(rm.tune)vm.runInContext('Object.assign(TUNE,'+JSON.stringify(rm.tune)+')',ctx);
  vm.runInContext('Object.assign(cfg,'+JSON.stringify(rm.cfg)+');HUM='+hum+';NS='+ns+';NM='+JSON.stringify(names)+';TEAMS='+JSON.stringify(teams)+';start();started=true',ctx);
- rm.ps.forEach((p,i)=>{p.si=i;send(p.ws,{t:'start',me:i,hum,ns,cfg:rm.cfg,names,teams})});
+ rm.ps.forEach((p,i)=>{p.si=i;send(p.ws,{t:'start',me:i,hum,ns,cfg:rm.cfg,names,teams});if(rm.tune)send(p.ws,{t:'tune',v:rm.tune})});
  let n=0;const g=rm.game={ctx};
  let nx=Date.now();rm.dc={};
  const tick=()=>{try{ctx.update(.05);n++;bc(rm,{t:'snap',n,d:ctx.SNAP()});
@@ -61,7 +63,10 @@ wss.on('connection',ws=>{
   else if(m.t=='cfg'&&p.room.host==p.id){p.room.cfg=cf(m.cfg);push(p.room)}
   else if(m.t=='name'&&!p.room.game){p.name=clean(m.name,16)||p.name;push(p.room)}
   else if(m.t=='team'&&!p.room.game){p.team=m.team?1:0;push(p.room)}
-  else if(m.t=='chat'){const n=Date.now();if(n-p.last<400)return;p.last=n;const x=clean(m.text,160);if(x)bc(p.room,{t:'chat',from:p.name,text:x})}
+  else if(m.t=='chat'){const n=Date.now();if(n-p.last<400)return;p.last=n;const x=cuss(clean(m.text,160));if(x)bc(p.room,{t:'chat',from:p.name,text:x})}
+  else if(m.t=='tune'){const rm=p.room;if(rm.host!=p.id){send(p.ws,{t:'note',text:'Only the host can change tuning'});if(rm.tune)send(p.ws,{t:'tune',v:rm.tune});return}
+   const t={};for(const k of ['spd','acc','hp','fr']){const n=+(m.v&&m.v[k]);t[k]=isFinite(n)?Math.min(5,Math.max(.1,n)):1}rm.tune=t;
+   if(rm.game)vm.runInContext('Object.assign(TUNE,'+JSON.stringify(t)+')',rm.game.ctx);bc(rm,{t:'tune',v:t})}
   else if(m.t=='start'&&p.room.host==p.id&&!p.room.game)startGame(p.room);
   else if(p.room.game&&p.si!=null){const x=p.room.game.ctx;let t='';
    if(m.t=='in')x.INP(p.si,m.k||{});
