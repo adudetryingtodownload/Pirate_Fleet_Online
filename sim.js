@@ -11,7 +11,7 @@ const rnd=(a,b)=>a+Math.random()*(b-a),ang=a=>Math.atan2(Math.sin(a),Math.cos(a)
 let ISL=[];const GT=[{x:500,y:1200,h:-Math.PI/2},{x:1200,y:500,h:0},{x:1900,y:1200,h:Math.PI/2},{x:1200,y:1900,h:Math.PI}];
 function dock(t){const b=ISL[t],dx=1200-b.x,dy=1200-b.y,d=Math.hypot(dx,dy);return{x:b.x+dx/d*(b.r+75),y:b.y+dy/d*(b.r+75)}}
 function place(s){const f=x=>x.lap*4+x.cp+1-Math.min(1,Math.hypot(x.x-GT[x.cp].x,x.y-GT[x.cp].y)/1000);return G.sh.filter(o=>f(o)>f(s)).length+1}
-function ship(i){const s={i,ai:i>=HUM,in:{},col:COLS[cfg.type==3?(TEAMS[i]!=null?TEAMS[i]:i%2):i],team:TEAMS[i]!=null?TEAMS[i]:i%2,cp:0,lap:0,lives:[cfg.lives,99,cfg.lives,99,cfg.lives][cfg.type],gold:cfg.type==1?1000:0,rt:0,dead:false};spawn(s);return s}
+function ship(i){const s={i,ai:i>=HUM,in:{},col:COLS[cfg.type==3?(TEAMS[i]!=null?TEAMS[i]:i%2):i],team:TEAMS[i]!=null?TEAMS[i]:i%2,cp:0,lap:0,lives:[cfg.lives,99,cfg.lives,99,99][cfg.type],gold:cfg.type==1?1000:0,rt:0,dead:false};spawn(s);return s}
 function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300],[1200,2100],[300,1200],[2100,1200]][s.i];
  s.x=q[0]+rnd(-80,80);s.y=q[1]+rnd(-80,80);s.h=Math.atan2(1200-s.y,1200-s.x);
  if(cfg.type==2){if(!s.cp&&!s.lap){s.x=1330+(s.i%2)*300;s.y=1640+Math.floor(s.i/2)*140;s.h=Math.PI}else{const g=GT[(s.cp+3)%4];s.x=g.x+rnd(-60,60);s.y=g.y+rnd(-60,60);s.h=g.h}}
@@ -71,7 +71,7 @@ function pirates(s,dt){let nest=false,bail=0;s.md.mn=0;
 const keys={};
 function steer(s,dt){if(s.in.w)s.thr=Math.min(1,s.thr+.5*dt);if(s.in.s)s.thr=Math.max(0,s.thr-.5*dt);
  s.v+=(s.thr*MV()+s.oars.filter(o=>o.man).length*4-s.v)*Math.min(1,dt*.8);
- const turn=((s.in.d?1:0)-(s.in.a?1:0))*(cfg.type==4?.9:.55)*(.3+.7*Math.min(1,s.v/MV()));
+ const turn=((s.in.d?1:0)-(s.in.a?1:0))*(cfg.type==4?1.125:.55)*(.3+.7*Math.min(1,s.v/MV()));
  s.h+=turn*dt;s.x+=Math.cos(s.h)*s.v*dt;s.y+=Math.sin(s.h)*s.v*dt}
 function step(s,dt){
  if(s.dead)return;
@@ -79,12 +79,12 @@ function step(s,dt){
  let want=null,bail=0;
  if(s.ai){want=cfg.type==4?gai(s,dt):ai(s,dt);bail=pirates(s,dt)}
  else{steer(s,dt);bail=pirates(s,dt)}
- if(want!=null){const v=cfg.type==4?40+cfg.diff*6:s.ai?(14+cfg.diff*3)*(s.mul||1)+s.oars.filter(o=>o.man).length*2:36;s.sp=v;s.h+=cp(ang(want-s.h),(cfg.type==4?1.1:s.ai?.2+cfg.diff*.03:.5)*dt);s.x+=Math.cos(s.h)*v*dt;s.y+=Math.sin(s.h)*v*dt}
+ if(want!=null){const v=cfg.type==4?(40+cfg.diff*6)*1.1:s.ai?(14+cfg.diff*3)*(s.mul||1)+s.oars.filter(o=>o.man).length*2:36;s.sp=v;s.h+=cp(ang(want-s.h),(cfg.type==4?1.375:s.ai?.2+cfg.diff*.03:.5)*dt);s.x+=Math.cos(s.h)*v*dt;s.y+=Math.sin(s.h)*v*dt}
  s.x=Math.max(60,Math.min(WS-60,s.x));s.y=Math.max(60,Math.min(WS-60,s.y));
  for(const o of ISL){const dx=s.x-o.x,dy=s.y-o.y,d=Math.hypot(dx,dy)||1,R=o.r+60;if(d<R){s.x=o.x+dx/d*R;s.y=o.y+dy/d*R}}
  s.water=Math.max(0,s.water+s.holes.length*dt-bail*.5*dt);
  if(cfg.type==4)gcoast(s);
- if(s.water>=1000){s.sink=3;fx(s.x,s.y,'s');if(s.by&&s.by!=s)s.by.k=(s.by.k||0)+1;if((cfg.type==1||cfg.type==3)&&s.gold>0){G.ch.push({x:s.x,y:s.y,v:s.gold});s.gold=0}}}
+ if(s.water>=1000){s.sink=3;fx(s.x,s.y,'s');if(s.by&&s.by!=s)s.by.k=(s.by.k||0)+1;s.dd=(s.dd||0)+1;if((cfg.type==1||cfg.type==3)&&s.gold>0){G.ch.push({x:s.x,y:s.y,v:s.gold});s.gold=0}}}
 
 function fr(s,p){for(const k of s.cn)if(k.man==p)k.man=null;for(const o of s.oars)if(o.man==p)o.man=null;p.carry=false;p.w=0}
 function crew(s,side,row,dt){s.ct=(s.ct||0)-dt;if(s.ct>0)return;s.ct=.8;
@@ -142,7 +142,8 @@ function update(dt){T+=dt;for(const s of G.sh)step(s,dt);collide();if(cfg.type==
  if(cfg.type==3){for(const s of G.sh){if(s.dead||s.sink>0||s.gold<=0)continue;const D=dock(s.team);if(Math.hypot(s.x-D.x,s.y-D.y)<120){G.sc[s.team]+=s.gold;NT(s.i,'Banked '+(s.gold|0)+' gold!');s.gold=0}}
   const w=G.sc.findIndex(v=>v>=cfg.goal);if(w>=0&&!over)over=(w?'Red':'Blue')+' team banked '+(G.sc[w]|0)+' gold'}for(const f of G.fx)f.t-=dt;G.fx=G.fx.filter(f=>f.t>0);
  const alive=G.sh.filter(s=>!s.dead);
- if(cfg.type==1){G.clock-=dt;if(G.clock<=0){const b=G.sh.reduce((a,s)=>s.gold>a.gold?s:a),nm=['You','Red','Green','Gold','Violet','Orange','Teal','Pink'];over=NM[b.i]+' wins with '+(b.gold|0)+' gold'}}
+ if(cfg.type==4){G.clock-=dt;if(G.clock<=0){const b=GTOP();over=(NS?'':(b==P?'Victory! ':'Defeat — '))+(NM[b.i]||(b==P?'You':'AI '+b.i))+' wins with '+(b.k|0)+' kills'}}
+ else if(cfg.type==1){G.clock-=dt;if(G.clock<=0){const b=G.sh.reduce((a,s)=>s.gold>a.gold?s:a),nm=['You','Red','Green','Gold','Violet','Orange','Teal','Pink'];over=NM[b.i]+' wins with '+(b.gold|0)+' gold'}}
  else if(alive.length<=1)over=alive.length?NM[alive[0].i]+' is the last ship afloat!':'Everyone sank!';
  if(over){$('t').textContent=over;$('menu').style.display='flex';$('bar').hidden=true}}
 
@@ -268,12 +269,13 @@ $('nm').value='Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
 $('jn').onclick=()=>conn(()=>tx({t:'join',code:$('cd').value,name:$('nm').value}));
 const qr=new URLSearchParams(location.search).get('room');if(qr){$('cd').value=qr.toUpperCase();$('go').onclick()}
-function MV(){return cfg.type==4?70:36}
+function MV(){return cfg.type==4?77:36}
+function GTOP(){return G.sh.reduce((a,s)=>((s.k|0)>(a.k|0)||((s.k|0)==(a.k|0)&&(s.dd|0)<(a.dd|0)))?s:a)}
 function GN(s,t){if(typeof NT=='function')NT(s.i,t);else if(s==P)note(t)}
 function coast(t,k){return 210+34*Math.sin(t/150+k*1.7)+22*Math.sin(t/61+k)}
 function cdepth(x,y){return Math.max(coast(y,0)-x,coast(x,1)-y,coast(y,2)-(WS-x),coast(x,3)-(WS-y))}
 function gcoast(s){const R=48;let p;if((p=coast(s.y,0)-s.x+R)>0)s.x+=p;if((p=coast(s.x,1)-s.y+R)>0)s.y+=p;if((p=coast(s.y,2)-(WS-s.x)+R)>0)s.x-=p;if((p=coast(s.x,3)-(WS-s.y)+R)>0)s.y-=p}
-function gFire(s){if(s.ammo<=0||s.gcd>0||s.sink>0||s.dead)return;s.ammo--;s.gcd=.7;const dx=-Math.sin(s.h),dy=Math.cos(s.h);G.pj.push({x:s.x+dx*22,y:s.y+dy*22,vx:dx*520,vy:dy*520,t:.66,o:s});fx(s.x+dx*22,s.y+dy*22,'f')}
+function gFire(s){if(s.ammo<=0||s.gcd>0||s.sink>0||s.dead)return;s.ammo--;s.gcd=.7;const dx=-Math.sin(s.h),dy=Math.cos(s.h);G.pj.push({x:s.x+dx*22,y:s.y+dy*22,vx:dx*520,vy:dy*520,t:.594,o:s});fx(s.x+dx*22,s.y+dy*22,'f')}
 function gBuild(s){if(s.dead||s.sink>0)return;
  const sd=[[coast(s.y,0)-s.x,0],[coast(s.x,1)-s.y,1],[coast(s.y,2)-(WS-s.x),2],[coast(s.x,3)-(WS-s.y),3]].sort((a,b)=>b[0]-a[0])[0];
  if(-sd[0]>170)return GN(s,'Sail closer to the shore to build an oil rig');
@@ -292,7 +294,7 @@ function gai(s,dt){const E=G.sh.filter(o=>o!=s&&!o.dead&&o.sink<=0),mine=G.rg.fi
   if(!s.gw||dd(s.gw)<110||(s.gt-=dt)<0){const sd=Math.random()*4|0,u=350+Math.random()*1700,c0=coast(u,sd)+105;s.gw=sd==0?{x:c0,y:u}:sd==1?{x:u,y:c0}:sd==2?{x:WS-c0,y:u}:{x:u,y:WS-c0};s.gt=25}
   want=Math.atan2(s.gw.y-s.y,s.gw.x-s.x);if(dd(s.gw)<130){gBuild(s);s.gw=null}}
  else{const tg=(t&&(dd(t)<700||!er))?t:er;if(tg){const a=Math.atan2(tg.y-s.y,tg.x-s.x),d=dd(tg),k=Math.min(1,Math.max(0,(420-d)/220));want=a-Math.PI/2*k;
-  const rel=ang(a-(s.h+Math.PI/2));if(Math.abs(rel)<.22&&d<335&&Math.random()<.4+cfg.diff*.12)gFire(s)}}
+  const rel=ang(a-(s.h+Math.PI/2));if(Math.abs(rel)<.22&&d<300&&Math.random()<.4+cfg.diff*.12)gFire(s)}}
  return want==null?Math.atan2(1200-s.y,1200-s.x):want}
 function gart(s){c.globalAlpha=s.sink>0?.5:1;
  const H=()=>{c.beginPath();c.moveTo(34,0);c.quadraticCurveTo(22,-15,-8,-14);c.lineTo(-30,-11);c.lineTo(-30,11);c.lineTo(-8,14);c.quadraticCurveTo(22,15,34,0);c.closePath()};
@@ -327,11 +329,11 @@ function CMD(si,m){const s=G.sh[si];if(!s||s.dead)return '';P=s;sel=s.pr[m.pi]||
 function INP(si,k){const s=G.sh[si];if(s)s.in={w:!!k.w,a:!!k.a,s:!!k.s,d:!!k.d}}
 function AIOF(si){const s=G.sh[si];if(s){s.ai=true;s.in={}}}
 function SNAP(){const r=v=>Math.round(v*10)/10;return JSON.stringify({o:over,W:over?WIN():[],e:EVQ.splice(0),k:G.clock,cs:G.cs,sc:G.sc,
- s:G.sh.map(s=>[r(s.x),r(s.y),Math.round(s.h*1000)/1000,r(s.thr),r(s.v||0),Math.round(s.water),r(s.sink),s.dead?1:0,s.lives,s.gold|0,s.k|0,s.cp,s.lap,s.md.ld?1:0,s.md.mn,s.nest?1:0,s.holes.map(h=>[r(h.x),r(h.y)]),s.cn.map(k=>(k.ld?1:0)+(k.man?2:0)),s.oars.map(o=>o.man?1:0),s.pr.map(p=>[Math.round(p.x),Math.round(p.y),p.job||'',p.carry?1:0]),s.hp|0,s.ammo|0]),
+ s:G.sh.map(s=>[r(s.x),r(s.y),Math.round(s.h*1000)/1000,r(s.thr),r(s.v||0),Math.round(s.water),r(s.sink),s.dead?1:0,s.lives,s.gold|0,s.k|0,s.cp,s.lap,s.md.ld?1:0,s.md.mn,s.nest?1:0,s.holes.map(h=>[r(h.x),r(h.y)]),s.cn.map(k=>(k.ld?1:0)+(k.man?2:0)),s.oars.map(o=>o.man?1:0),s.pr.map(p=>[Math.round(p.x),Math.round(p.y),p.job||'',p.carry?1:0]),s.hp|0,s.ammo|0,s.dd|0]),
  rg:G.rg.map(r=>[Math.round(r.x),Math.round(r.y),r.o,r.hp,Math.round(r.oil*10)/10]),p:G.pj.map(p=>[r(p.x),r(p.y),Math.round(p.vx),Math.round(p.vy)]),m:G.mn.map(m=>[r(m.x),r(m.y),m.arm>0?1:0,G.sh.indexOf(m.o)]),c:G.ch.map(q=>[r(q.x),r(q.y),q.v|0]),f:G.fx.map(f=>[r(f.x),r(f.y),f.k,r(f.t)])})}
 var OUTQ=[];function NT(i,t){OUTQ.push([i,t])}
 function AION(si){const s=G.sh[si];if(s){s.ai=false;s.in={}}}
-function WIN(){const A=G.sh.filter(s=>!s.dead);if(cfg.type==0||cfg.type==4)return A.map(s=>s.i);
+function WIN(){const A=G.sh.filter(s=>!s.dead);if(cfg.type==4)return[GTOP().i];if(cfg.type==0)return A.map(s=>s.i);
  if(cfg.type==1)return[G.sh.reduce((a,s)=>s.gold>a.gold?s:a).i];
  if(cfg.type==2)return[G.sh.reduce((a,s)=>s.lap>a.lap?s:a).i];
  const w=G.sc[1]>G.sc[0]?1:0;return G.sh.filter(s=>s.team==w).map(s=>s.i)}
