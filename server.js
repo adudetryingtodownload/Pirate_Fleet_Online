@@ -65,7 +65,7 @@ wss.on('connection',ws=>{
   else if(m.t=='team'&&!p.room.game){p.team=m.team?1:0;push(p.room)}
   else if(m.t=='chat'){const n=Date.now();if(n-p.last<400)return;p.last=n;const x=cuss(clean(m.text,160));if(x)bc(p.room,{t:'chat',from:p.name,text:x})}
   else if(m.t=='tune'){const rm=p.room;if(rm.host!=p.id){send(p.ws,{t:'note',text:'Only the host can change tuning'});if(rm.tune)send(p.ws,{t:'tune',v:rm.tune});return}
-   const t={};for(const k of ['spd','acc','hp','fr']){const n=+(m.v&&m.v[k]);t[k]=isFinite(n)?Math.min(5,Math.max(.1,n)):1}rm.tune=t;
+   const t={};for(const k of ['spd','acc','hp','fr','trn']){const n=+(m.v&&m.v[k]);t[k]=isFinite(n)?Math.min(5,Math.max(.1,n)):1}rm.tune=t;
    if(rm.game)vm.runInContext('Object.assign(TUNE,'+JSON.stringify(t)+')',rm.game.ctx);bc(rm,{t:'tune',v:t})}
   else if(m.t=='start'&&p.room.host==p.id&&!p.room.game)startGame(p.room);
   else if(p.room.game&&p.si!=null){const x=p.room.game.ctx;let t='';
