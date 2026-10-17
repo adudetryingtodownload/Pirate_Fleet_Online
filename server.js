@@ -24,7 +24,7 @@ function leave(p){const rm=p.room;if(!rm)return;p.room=null;rm.ps=rm.ps.filter(x
  bc(rm,{t:'sys',text:p.name+' left the room'});push(rm)}
 const SIM=fs.readFileSync(path.join(__dirname,'sim.js'),'utf8');
 const stub=()=>new Proxy(function(){},{get:(t,k)=>k===Symbol.toPrimitive?()=>0:k==='length'?0:stub(),apply:()=>stub(),set:()=>true,construct:()=>stub()});
-const CN=['Blue','Red','Green','Gold','Violet','Orange','Teal','Pink'],KEYS=['C','L','R','B','N','O','M','X','G',' ','TAB'];
+const CN=['Blue','Red','Green','Gold','Violet','Orange','Teal','Pink'],KEYS=['C','L','R','B','N','O','M','X','G','Y',' ','TAB'];
 function startGame(rm){
  const hum=rm.ps.length,ai=Math.max(hum<2?1:0,Math.min(rm.cfg.ai==null?3:rm.cfg.ai,8-hum)),ns=hum+ai,
   teams=rm.ps.map(p=>p.team|0);

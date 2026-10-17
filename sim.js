@@ -17,10 +17,10 @@ function spawn(s){const q=[[500,500],[1900,500],[500,1900],[1900,1900],[1200,300
  if(cfg.type==2){if(!s.cp&&!s.lap){s.x=1330+(s.i%2)*300;s.y=1640+Math.floor(s.i/2)*140;s.h=Math.PI}else{const g=GT[(s.cp+3)%4];s.x=g.x+rnd(-60,60);s.y=g.y+rnd(-60,60);s.h=g.h}}
  if(cfg.type==3){const b=ISL[s.team];s.x=b.x+(1200-b.x)*.22+rnd(-100,100);s.y=b.y+(1200-b.y)*.22+rnd(-100,100);s.h=Math.atan2(1200-s.y,1200-s.x);s.gold=0}
  s.oars=[[350,-1,78],[350,1,78],[430,-1,58],[430,1,58]].map(a=>({x:a[0],s:a[1],y:a[1]*a[2],man:null}));s.by=null;s.st='';s.mm=2;s.mc=0;s.md={ld:false,mn:0};s.wp=[];s.thr=0;s.v=0;s.water=0;s.hp=HPMAX();s.ammo=10;s.gcd=0;s.gw=null;
- if(cfg.type==4){const a=Math.random()*6.283,r=450+Math.random()*450;s.x=1200+Math.cos(a)*r;s.y=1200+Math.sin(a)*r;s.h=Math.random()*6.283;s.thr=.5;s.v=35}s.holes=[];s.sink=0;s.nest=false;s.cn=[];s.pr=[];
+ if(cfg.type==4){const a=Math.random()*6.283,r=450+Math.random()*450;s.x=1200+Math.cos(a)*r;s.y=1200+Math.sin(a)*r;s.h=Math.random()*6.283;s.thr=.5;s.v=35;const yy=G&&G.yd&&G.sh.includes(s)&&G.yd.find(q=>q.o==s.i&&q.hp>0);if(yy){s.x=yy.sx;s.y=yy.sy;s.h=yy.a;s.thr=0;s.v=0}}s.holes=[];s.sink=0;s.nest=false;s.cn=[];s.pr=[];
  for(const d of cfg.type==4?[]:[-1,1])for(let j=0;j<6;j++)s.cn.push({x:-410+j*100,s:d,man:null,ld:false,t:rnd(6,12)});
  for(let k=0;k<(cfg.type==4?0:10);k++)s.pr.push({x:-300+(k%5)*120,y:-40+Math.floor(k/5)*80,job:null,pend:null,tg:null,carry:false,w:0,col:PC[k%3],bt:{x:30+(k%3)*50,y:[0,45,-45][k%3]},rs:{x:150+(k%3)*60,y:[-60,0,60][k%3]}})}
-function start(){ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],rg:[],gn:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=Math.min(W/330,H/170);bx=by=0;
+function start(){ISL=cfg.type==2?[{x:1200,y:1200,r:300}]:cfg.type==3?[{x:300,y:2100,r:170,t:0},{x:2100,y:300,r:170,t:1}]:[];G={sh:Array.from({length:NS||1+cfg.ai},(_,i)=>ship(i)),pj:[],fx:[],mn:[],ch:[],rg:[],gn:[],yd:[],sc:[0,0],cs:0,clock:cfg.mins*60};P=G.sh[0];mode='ship';started=true;over='';sel=null;bz=Math.min(W/330,H/170);bx=by=0;
  cam={x:P.x,y:P.y,z:bz,r:-P.h};$('menu').style.display='none';$('lobby').style.display='none';$('bar').hidden=false}
 const cfg={ai:3,diff:3,type:0,slots:1,laps:3,lives:3,mins:5,goal:7000},DN=['','Cabin boy','Sailor','Captain','Commodore','Pirate King'],TN=['Last ship floating','Go for the gold (timed, most gold wins)','Ship race (laps around the island, with cannons)','Team gold (first team to bank the target)'],
 BN=['Red','Green','Gold','Violet','Orange','Teal','Pink'],RP=['Yarr, ye be sinking tonight!','Mind yer stern, mines be about.','Me cannons be hungry.','Fair winds, ye scurvy dog.','See ye at the bottom o the sea!'];
@@ -70,8 +70,8 @@ function pirates(s,dt){let nest=false,bail=0;s.md.mn=0;
 
 const keys={};
 function steer(s,dt){if(s.in.w)s.thr=Math.min(1,s.thr+(cfg.type==4?.665:.5)*dt);if(s.in.s)s.thr=Math.max(0,s.thr-(cfg.type==4?.665:.5)*dt);
- s.v+=(s.thr*MV()+s.oars.filter(o=>o.man).length*4-s.v)*Math.min(1,dt*(cfg.type==4?1.064:.8)*TUNE.acc);
- const turn=((s.in.d?1:0)-(s.in.a?1:0))*(cfg.type==4?1.125:.55)*TUNE.trn*(.3+.7*Math.min(1,s.v/MV()));
+ s.v+=(s.thr*MV()+s.oars.filter(o=>o.man).length*4-s.v)*Math.min(1,dt*(cfg.type==4?2.13:.8)*TUNE.acc);
+ const turn=((s.in.d?1:0)-(s.in.a?1:0))*(cfg.type==4?2.02:.55)*TUNE.trn*(.3+.7*Math.min(1,s.v/MV()));
  s.h+=turn*dt;s.x+=Math.cos(s.h)*s.v*dt;s.y+=Math.sin(s.h)*s.v*dt}
 function step(s,dt){
  if(s.dead)return;
@@ -79,12 +79,12 @@ function step(s,dt){
  let want=null,bail=0;
  if(s.ai){want=cfg.type==4?gai(s,dt):ai(s,dt);bail=pirates(s,dt)}
  else{steer(s,dt);bail=pirates(s,dt)}
- if(want!=null){const v=TUNE.spd*(cfg.type==4?(40+cfg.diff*6)*1.29:s.ai?(14+cfg.diff*3)*(s.mul||1)+s.oars.filter(o=>o.man).length*2:36);s.sp=v;s.h+=cp(ang(want-s.h),(cfg.type==4?1.375:s.ai?.2+cfg.diff*.03:.5)*TUNE.trn*dt);s.x+=Math.cos(s.h)*v*dt;s.y+=Math.sin(s.h)*v*dt}
+ if(want!=null){const v=TUNE.spd*(cfg.type==4?(40+cfg.diff*6)*2.65:s.ai?(14+cfg.diff*3)*(s.mul||1)+s.oars.filter(o=>o.man).length*2:36);s.sp=v;s.h+=cp(ang(want-s.h),(cfg.type==4?2.47:s.ai?.2+cfg.diff*.03:.5)*TUNE.trn*dt);s.x+=Math.cos(s.h)*v*dt;s.y+=Math.sin(s.h)*v*dt}
  s.x=Math.max(60,Math.min(WS-60,s.x));s.y=Math.max(60,Math.min(WS-60,s.y));
  for(const o of ISL){const dx=s.x-o.x,dy=s.y-o.y,d=Math.hypot(dx,dy)||1,R=o.r+60;if(d<R){s.x=o.x+dx/d*R;s.y=o.y+dy/d*R}}
  s.water=Math.max(0,s.water+s.holes.length*dt/TUNE.hp-bail*.5*dt);
  if(cfg.type==4)gcoast(s);
- if(s.water>=1000){s.sink=3;fx(s.x,s.y,'s');if(s.by&&s.by!=s&&!s.byG)s.by.k=(s.by.k||0)+1;s.dd=(s.dd||0)+1;if((cfg.type==1||cfg.type==3)&&s.gold>0){G.ch.push({x:s.x,y:s.y,v:s.gold});s.gold=0}}}
+ if(s.water>=1000){s.sink=3;fx(s.x,s.y,'s');if(s.by&&s.by!=s&&!s.byG){s.by.k=(s.by.k||0)+1;s.by.pt=(s.by.pt|0)+25}s.dd=(s.dd||0)+1;if((cfg.type==1||cfg.type==3)&&s.gold>0){G.ch.push({x:s.x,y:s.y,v:s.gold});s.gold=0}}}
 
 function fr(s,p){for(const k of s.cn)if(k.man==p)k.man=null;for(const o of s.oars)if(o.man==p)o.man=null;p.carry=false;p.w=0}
 function crew(s,side,row,dt){s.ct=(s.ct||0)-dt;if(s.ct>0)return;s.ct=.8;
@@ -132,8 +132,9 @@ function update(dt){T+=dt;for(const s of G.sh)step(s,dt);collide();if(cfg.type==
  for(const p of G.pj){p.x+=p.vx*dt;p.y+=p.vy*dt;p.t-=dt;let hit=false;
   for(const s of G.sh){if(s==p.o||s.dead||s.sink>0||(cfg.type==3&&s.team==p.o.team))continue;const l=loc(s,p.x,p.y);
    if(cfg.type==4?l.x*l.x+l.y*l.y<22500:(l.x-20)**2/620**2+l.y*l.y/170**2<1){hit=true;s.by=p.o;s.byG=!!p.gn;if(cfg.type==4){s.hp--;if(s.hp<=0)s.water=1000}else s.holes.push({x:cp(l.x,560),y:cp(l.y,120)});fx(p.x,p.y,'h');break}}
-  if(!hit&&cfg.type==4)for(const r of G.rg){if(r.o==p.o.i||r.hp<=0)continue;if(Math.hypot(r.x-p.x,r.y-p.y)<30){r.hp--;hit=true;fx(p.x,p.y,'h');if(r.hp<=0)GN(G.sh[r.o],'Your oil rig was destroyed!');break}}
-  if(!hit&&cfg.type==4)for(const g of G.gn){if(g.o==p.o.i||g.hp<=0)continue;if(Math.hypot(g.x-p.x,g.y-p.y)<30){g.hp--;hit=true;fx(p.x,p.y,'h');if(g.hp<=0)GN(G.sh[g.o],'Your gunner was destroyed!');break}}
+  if(!hit&&cfg.type==4)for(const r of G.rg){if(r.o==p.o.i||r.hp<=0)continue;if(Math.hypot(r.x-p.x,r.y-p.y)<30){r.hp--;hit=true;fx(p.x,p.y,'h');if(r.hp<=0){p.o.pt=(p.o.pt|0)+10;GN(G.sh[r.o],'Your oil rig was destroyed!')}break}}
+  if(!hit&&cfg.type==4)for(const g of G.gn){if(g.o==p.o.i||g.hp<=0)continue;if(Math.hypot(g.x-p.x,g.y-p.y)<30){g.hp--;hit=true;fx(p.x,p.y,'h');if(g.hp<=0){p.o.pt=(p.o.pt|0)+15;GN(G.sh[g.o],'Your gunner was destroyed!')}break}}
+  if(!hit&&cfg.type==4)for(const y of G.yd){if(y.o==p.o.i||y.hp<=0)continue;if(Math.hypot(y.x-p.x,y.y-p.y)<34){y.hp--;hit=true;fx(p.x,p.y,'h');if(y.hp<=0)GN(G.sh[y.o],'Your shipyard was destroyed!');break}}
   if(hit||p.t<=0){if(!hit)fx(p.x,p.y,'s');p.dead=true}}
  G.pj=G.pj.filter(p=>!p.dead);
  for(const m of G.mn){m.t-=dt;if(m.arm>0){m.arm-=dt;continue}for(const s of G.sh){if(s==m.o||s.dead||s.sink>0||(cfg.type==3&&s.team==m.o.team))continue;const l=loc(s,m.x,m.y);if((l.x-20)**2/660**2+l.y*l.y/210**2<1){m.t=0;s.by=m.o;for(let i=0;i<4;i++)s.holes.push({x:cp(l.x+rnd(-60,60),560),y:cp(l.y*.6+rnd(-30,30),120)});fx(m.x,m.y,'h');fx(m.x+8,m.y,'h');break}}}G.mn=G.mn.filter(m=>m.t>0);
@@ -239,7 +240,7 @@ cv.onmousedown=e=>{if(!G||over)return;const w=s2w(e.clientX,e.clientY);
   else{free(sel);if(j=='B'){sel.job='B';sel.tg={x:cp(l.x,540),y:cp(l.y,110)};note('Pirate will bail from here')}else if(j=='N'){sel.job='N'}else{sel.job='M';sel.tg={x:cp(l.x,540),y:cp(l.y,115)}}}
   if(ok)sel.pend=null}};
 function setMode(m){if(m!='map')started=true;mode=m;if(m!='build')sel=null;if(m=='battle')bx=by=0}
-function key(k){if(!G||over)return;k=k.toUpperCase();if(cfg.type==4){if(k==' ')gFire(P);else if(k=='B')gBuild(P);else if(k=='G')gGun(P);return}
+function key(k){if(!G||over)return;k=k.toUpperCase();if(cfg.type==4){if(k==' ')gFire(P);else if(k=='B')gBuild(P);else if(k=='G')gGun(P);else if(k=='Y')gYard(P);else if(k=='TAB'){P.side=-(P.side||1);note('Cannon switched to the '+(P.side<0?'right':'left')+' side')}return}
  if(k=='F')bx=by=0;else if(k=='H')showHelp=!showHelp;else if(k=='TAB'){let n=0;for(const p of P.pr)if(p.job=='C'&&p.tg){const o=P.cn.find(q=>q.x==p.tg.x&&q.s==-p.tg.s);if(o){free(p);p.job='C';p.tg=o;n++}}note(n?'Gun crews switching to the other side':'No gun crews to switch')}
  else if(k==' '){for(const q of P.cn)if(q.man&&q.ld&&P.sink<=0)fire(P,q)}
  else if(k=='X')dropMine(P)
@@ -270,58 +271,70 @@ $('nm').value='Captain'+(Math.random()*90+10|0);
 $('mk').onclick=()=>conn(()=>tx({t:'create',name:$('nm').value,cfg}));
 $('jn').onclick=()=>conn(()=>tx({t:'join',code:$('cd').value,name:$('nm').value}));
 const qr=new URLSearchParams(location.search).get('room');if(qr){$('cd').value=qr.toUpperCase();$('go').onclick()}
-var TUNE={spd:1,acc:1,hp:1,fr:1,trn:1};function HPMAX(){return Math.max(1,Math.round(5*TUNE.hp))}
-function MV(){return (cfg.type==4?90:36)*TUNE.spd}
-function GTOP(){return G.sh.reduce((a,s)=>((s.k|0)>(a.k|0)||((s.k|0)==(a.k|0)&&(s.dd|0)<(a.dd|0)))?s:a)}
+var TUNE={spd:1,acc:1,hp:1,fr:1,trn:1};function HPMAX(){return Math.max(1,Math.round((cfg.type==4?7:5)*TUNE.hp))}
+function MV(){return (cfg.type==4?185:36)*TUNE.spd}
+function GTOP(){return G.sh.reduce((a,s)=>((s.pt|0)>(a.pt|0)||((s.pt|0)==(a.pt|0)&&((s.k|0)>(a.k|0)||((s.k|0)==(a.k|0)&&(s.dd|0)<(a.dd|0)))))?s:a)}
 function GN(s,t){if(typeof NT=='function')NT(s.i,t);else if(s==P)note(t)}
 function coast(t,k){return 210+34*Math.sin(t/150+k*1.7)+22*Math.sin(t/61+k)}
 function cdepth(x,y){return Math.max(coast(y,0)-x,coast(x,1)-y,coast(y,2)-(WS-x),coast(x,3)-(WS-y))}
 function gcoast(s){const R=48;let p;if((p=coast(s.y,0)-s.x+R)>0)s.x+=p;if((p=coast(s.x,1)-s.y+R)>0)s.y+=p;if((p=coast(s.y,2)-(WS-s.x)+R)>0)s.x-=p;if((p=coast(s.x,3)-(WS-s.y)+R)>0)s.y-=p}
-function gFire(s){if(s.ammo<=0||s.gcd>0||s.sink>0||s.dead)return;s.ammo--;s.gcd=.7/TUNE.fr;const dx=Math.sin(s.h),dy=-Math.cos(s.h);G.pj.push({x:s.x+dx*22,y:s.y+dy*22,vx:dx*520,vy:dy*520,t:.594,o:s});fx(s.x+dx*22,s.y+dy*22,'f')}
+function gFire(s){if(s.ammo<=0||s.gcd>0||s.sink>0||s.dead)return;s.ammo--;s.gcd=.23/TUNE.fr;const sg=s.side||1,dx=sg*Math.sin(s.h),dy=-sg*Math.cos(s.h);G.pj.push({x:s.x+dx*22,y:s.y+dy*22,vx:dx*520,vy:dy*520,t:.594,o:s});fx(s.x+dx*22,s.y+dy*22,'f')}
 function gBuild(s){if(s.dead||s.sink>0)return;
  const sd=[[coast(s.y,0)-s.x,0],[coast(s.x,1)-s.y,1],[coast(s.y,2)-(WS-s.x),2],[coast(s.x,3)-(WS-s.y),3]].sort((a,b)=>b[0]-a[0])[0];
  if(-sd[0]>170)return GN(s,'Sail closer to the shore to build an oil rig');
  if(G.rg.filter(r=>r.o==s.i&&r.hp>0).length>=5)return GN(s,'Rig limit reached (5)');
  const k=sd[1],x=k==0?coast(s.y,0)-55:k==2?WS-coast(s.y,2)+55:s.x,y=k==1?coast(s.x,1)-55:k==3?WS-coast(s.x,3)+55:s.y;
  if(G.rg.some(r=>r.hp>0&&Math.hypot(r.x-x,r.y-y)<170))return GN(s,'Too close to another rig');
+ if(G.yd.some(q=>q.hp>0&&Math.hypot(q.x-x,q.y-y)<130))return GN(s,'Too close to a shipyard');
  if(G.gn.some(g=>g.hp>0&&Math.hypot(g.x-x,g.y-y)<70))return GN(s,'Too close to a gunner');
  G.rg.push({x,y,o:s.i,oil:0,hp:3});GN(s,'Oil rig built! Sail near it later to collect oil')}
+function gYard(s){if(s.dead||s.sink>0)return;
+ const sd=[[coast(s.y,0)-s.x,0],[coast(s.x,1)-s.y,1],[coast(s.y,2)-(WS-s.x),2],[coast(s.x,3)-(WS-s.y),3]].sort((a,b)=>b[0]-a[0])[0];
+ if(-sd[0]>170)return GN(s,'Sail closer to the shore to build a shipyard');
+ if(G.yd.some(y=>y.o==s.i&&y.hp>0))return GN(s,'You already have a shipyard');
+ const k=sd[1],x=k==0?coast(s.y,0)-55:k==2?WS-coast(s.y,2)+55:s.x,y=k==1?coast(s.x,1)-55:k==3?WS-coast(s.x,3)+55:s.y;
+ if(G.rg.some(r=>r.hp>0&&Math.hypot(r.x-x,r.y-y)<130)||G.gn.some(g=>g.hp>0&&Math.hypot(g.x-x,g.y-y)<110)||G.yd.some(q=>q.hp>0&&Math.hypot(q.x-x,q.y-y)<220))return GN(s,'Too close to another structure');
+ const a=[0,Math.PI/2,Math.PI,-Math.PI/2][k];G.yd.push({x,y,o:s.i,hp:6,k,a,sx:x+Math.cos(a)*140,sy:y+Math.sin(a)*140});GN(s,'Shipyard built! It is now your spawn point and repairs your hull for 2 oil per point')}
 function gGun(s){if(s.dead||s.sink>0)return;
  if(G.gn.filter(g=>g.o==s.i&&g.hp>0).length>=2)return GN(s,'Gunner limit reached (2)');
  if(s.ammo<7)return GN(s,'A gunner costs 7 cannonballs (you have '+s.ammo+')');
  const sd=[[coast(s.y,0)-s.x,0],[coast(s.x,1)-s.y,1],[coast(s.y,2)-(WS-s.x),2],[coast(s.x,3)-(WS-s.y),3]].sort((a,b)=>b[0]-a[0])[0];
  if(-sd[0]>170)return GN(s,'Sail closer to the shore to post a gunner');
  const k=sd[1],x=k==0?coast(s.y,0)-55:k==2?WS-coast(s.y,2)+55:s.x,y=k==1?coast(s.x,1)-55:k==3?WS-coast(s.x,3)+55:s.y;
- if(G.rg.some(r=>r.hp>0&&Math.hypot(r.x-x,r.y-y)<70)||G.gn.some(g=>g.hp>0&&Math.hypot(g.x-x,g.y-y)<90))return GN(s,'Too close to another structure');
+ if(G.rg.some(r=>r.hp>0&&Math.hypot(r.x-x,r.y-y)<70)||G.gn.some(g=>g.hp>0&&Math.hypot(g.x-x,g.y-y)<90)||G.yd.some(q=>q.hp>0&&Math.hypot(q.x-x,q.y-y)<110))return GN(s,'Too close to another structure');
  const a0=[0,Math.PI/2,Math.PI,-Math.PI/2][k];s.ammo-=7;G.gn.push({x,y,o:s.i,hp:3,a:a0,a0,cd:2});GN(s,'Gunner posted! (-7 cannonballs)')}
-function gtick(dt){for(const s of G.sh)if(s.gcd>0)s.gcd-=dt;
+function gtick(dt){for(const s of G.sh){if(s.gcd>0)s.gcd-=dt;
+  const y=G.yd.find(q=>q.o==s.i&&q.hp>0);if(y&&!s.dead&&s.sink<=0&&s.hp<HPMAX()&&s.ammo>=2&&Math.hypot(s.x-y.x,s.y-y.y)<200){s.ry=(s.ry||0)-dt;if(s.ry<=0){s.ry=1;s.hp++;s.ammo-=2;GN(s,'Shipyard repaired 1 hull (-2 oil): '+s.hp+'/'+HPMAX())}}else s.ry=0}
  for(const r of G.rg){if(r.hp>0&&r.oil<5)r.oil=Math.min(5,r.oil+dt/12);if(r.hp<=0||r.oil<1)continue;
-  for(const s of G.sh){if(s.dead||s.sink>0||s.ammo>=30||r.oil<1)continue;if(Math.hypot(s.x-r.x,s.y-r.y)<140){const n=Math.min(Math.floor(r.oil),30-s.ammo);s.ammo+=n;r.oil-=n;GN(s,'Picked up '+n+' oil: +'+n+' cannonballs'+(r.o!=s.i?' (from an enemy rig)':''))}}}
+  for(const s of G.sh){if(s.dead||s.sink>0||s.ammo>=30||r.oil<1)continue;if(Math.hypot(s.x-r.x,s.y-r.y)<140){const n=Math.min(Math.floor(r.oil),30-s.ammo);s.ammo+=n;s.pt=(s.pt|0)+n;r.oil-=n;GN(s,'Picked up '+n+' oil: +'+n+' cannonballs'+(r.o!=s.i?' (from an enemy rig)':''))}}}
  for(const g of G.gn){if(g.hp<=0)continue;g.cd-=dt;let t=null,bd=1e9;for(const s of G.sh){if(s.i==g.o||s.dead||s.sink>0)continue;const d=Math.hypot(s.x-g.x,s.y-g.y);if(d<bd){bd=d;t=s}}
   if(t&&bd<330){const tv=t.ai?(t.sp||0):(t.v||0),vx=Math.cos(t.h)*tv,vy=Math.sin(t.h)*tv;let tt=bd/520,px=t.x+vx*tt,py=t.y+vy*tt;tt=Math.hypot(px-g.x,py-g.y)/520;px=t.x+vx*tt;py=t.y+vy*tt;
-   if(Math.hypot(px-g.x,py-g.y)<300){g.a=Math.atan2(py-g.y,px-g.x);if(g.cd<=0){g.cd=2.4/TUNE.fr;const a=g.a+(Math.random()-.5)*.08,bx=g.x+Math.cos(a)*28,by=g.y+Math.sin(a)*28;G.pj.push({x:bx,y:by,vx:Math.cos(a)*520,vy:Math.sin(a)*520,t:.594,gn:1,o:G.sh[g.o]});fx(bx,by,'f')}}else g.a=g.a0}else g.a=g.a0}
- G.rg=G.rg.filter(r=>r.hp>0);G.gn=G.gn.filter(g=>g.hp>0)}
+   if(Math.hypot(px-g.x,py-g.y)<300){g.a=Math.atan2(py-g.y,px-g.x);if(g.cd<=0){g.cd=.8/TUNE.fr;const a=g.a+(Math.random()-.5)*.08,bx=g.x+Math.cos(a)*28,by=g.y+Math.sin(a)*28;G.pj.push({x:bx,y:by,vx:Math.cos(a)*520,vy:Math.sin(a)*520,t:.594,gn:1,o:G.sh[g.o]});fx(bx,by,'f')}}else g.a=g.a0}else g.a=g.a0}
+ G.rg=G.rg.filter(r=>r.hp>0);G.gn=G.gn.filter(g=>g.hp>0);G.yd=G.yd.filter(y=>y.hp>0)}
 function gai(s,dt){const E=G.sh.filter(o=>o!=s&&!o.dead&&o.sink<=0),mine=G.rg.filter(r=>r.o==s.i&&r.hp>0),en=G.rg.filter(r=>r.o!=s.i&&r.hp>0),dd=o=>Math.hypot(o.x-s.x,o.y-s.y),nr=a=>a.sort((x,y)=>dd(x)-dd(y))[0],to=o=>Math.atan2(o.y-s.y,o.x-s.x);
  const EG=G.gn.filter(g=>g.hp>0&&g.o!=s.i),guarded=r=>EG.some(g=>Math.hypot(g.x-r.x,g.y-r.y)<360),safe=(x,y)=>!EG.some(g=>Math.hypot(g.x-x,g.y-y)<400);
- const t=nr(E),erc=nr(en.filter(r=>!guarded(r))),er=nr(en.filter(r=>r.oil>=1&&!guarded(r))),myOil=nr(mine.filter(r=>r.oil>=1)),myNear=nr(mine.slice()),ng=G.gn.filter(g=>g.o==s.i&&g.hp>0).length,wg=mine.length>=1&&s.ammo>=9&&ng<2,thr=t&&dd(t)<320;
+ const myYd=G.yd.find(q=>q.o==s.i&&q.hp>0),t=nr(E),erc=nr(en.filter(r=>!guarded(r))),er=nr(en.filter(r=>r.oil>=1&&!guarded(r))),myOil=nr(mine.filter(r=>r.oil>=1)),myNear=nr(mine.slice()),ng=G.gn.filter(g=>g.o==s.i&&g.hp>0).length,wg=mine.length>=1&&s.ammo>=7&&ng<2,thr=t&&dd(t)<320;
  const bw=gun=>{if(!s.gw||dd(s.gw)<110||(s.gt-=dt)<0||!safe(s.gw.x,s.gw.y)){
    if(!s.hb){const sd0=[[coast(s.y,0)-s.x,0],[coast(s.x,1)-s.y,1],[coast(s.y,2)-(WS-s.x),2],[coast(s.x,3)-(WS-s.y),3]].sort((a,b)=>b[0]-a[0])[0][1];s.hb={sd:sd0,u:Math.min(2000,Math.max(400,sd0%2?s.x:s.y))}}
    let g=null;for(let n=0;n<8&&!g;n++){const sd=s.hb.sd,u=Math.min(2050,Math.max(350,s.hb.u+(Math.random()-.5)*800)),c0=coast(u,sd)+105,p=sd==0?{x:c0,y:u}:sd==1?{x:u,y:c0}:sd==2?{x:WS-c0,y:u}:{x:u,y:WS-c0};if(safe(p.x,p.y))g=p}
-   if(gun&&mine.length){const r=mine[Math.random()*mine.length|0],ix=1200-r.x,iy=1200-r.y,il=Math.hypot(ix,iy)||1,ux=ix/il,uy=iy/il,sg=Math.random()<.5?1:-1;g={x:r.x+ux*150-uy*110*sg,y:r.y+uy*150+ux*110*sg}}
+   if(gun==1&&mine.length){const r=mine[Math.random()*mine.length|0],ix=1200-r.x,iy=1200-r.y,il=Math.hypot(ix,iy)||1,ux=ix/il,uy=iy/il,sg=Math.random()<.5?1:-1;g={x:r.x+ux*150-uy*110*sg,y:r.y+uy*150+ux*110*sg}}
    s.gw=g;s.gt=25}
   if(!s.gw)return null;
-  if(dd(s.gw)<130){if(gun)gGun(s);else gBuild(s);s.gw=null}
+  if(dd(s.gw)<130){if(gun==2)gYard(s);else if(gun)gGun(s);else gBuild(s);s.gw=null}
   return s.gw?to(s.gw):null};
  let want=null;s.desp=0;
- if(!mine.length&&!thr)want=bw(false);
+ if(!mine.length&&!thr)want=bw(0);
+ if(want==null&&mine.length&&!myYd&&!thr)want=bw(2);
+ if(want==null&&myYd&&s.hp<HPMAX()-1&&s.ammo>=2&&!thr)want=to(myYd);
+ if(want==null&&mine.length<4&&!thr&&!(s.ammo<=1&&myOil))want=bw(0);
  if(want==null&&s.ammo<=5){
   if(myOil&&(s.ammo>1||dd(myOil)<1500||!er)){want=to(myOil);s.desp=s.ammo<=1?1:0}
-  else if(s.ammo<=1&&er){want=to(er);s.desp=1}
+  else if(s.ammo<=1&&er&&(!myNear||dd(myNear)>1200)){want=to(er);s.desp=1}
   else if(myNear&&dd(myNear)>150)want=to(myNear)}
  if(want==null&&s.ammo<20){const o=nr(mine.filter(r=>r.oil>=3&&dd(r)<700));if(o)want=to(o)}
- if(want==null&&((mine.length<4&&s.ammo>=6)||wg)&&(!t||dd(t)>450))want=bw(wg);
+ if(want==null&&((mine.length<4&&s.ammo>=6)||wg)&&(!t||dd(t)>450))want=bw(wg?1:0);
  if(want==null){const tg=(t&&(dd(t)<700||!erc))?t:erc;if(tg){const a=to(tg),d=dd(tg),k=Math.min(1,Math.max(0,(420-d)/220));want=a+Math.PI/2*k;
-  const rel=ang(a-(s.h-Math.PI/2));if(Math.abs(rel)<.22&&d<300&&Math.random()<.4+cfg.diff*.12)gFire(s)}}
+  const rel=ang(a-(s.h-Math.PI/2));if(Math.abs(rel)<.22&&d<300&&Math.random()<.03+cfg.diff*.02&&!(s.ammo<=7&&ng<2&&mine.length&&d>220))gFire(s)}}
  if(want==null)want=Math.atan2(1200-s.y,1200-s.x);
  if(!s.desp&&EG.length){let vx=Math.cos(want),vy=Math.sin(want),hit=0;for(const g of EG){const d=Math.hypot(g.x-s.x,g.y-s.y);if(d<420){const w=Math.min(1,(420-d)/140)*1.8,m=d||1;vx+=(s.x-g.x)/m*w;vy+=(s.y-g.y)/m*w;hit=1}}if(hit)want=Math.atan2(vy,vx)}
  return want}
@@ -358,8 +371,8 @@ function CMD(si,m){const s=G.sh[si];if(!s||s.dead)return '';P=s;sel=s.pr[m.pi]||
 function INP(si,k){const s=G.sh[si];if(s)s.in={w:!!k.w,a:!!k.a,s:!!k.s,d:!!k.d}}
 function AIOF(si){const s=G.sh[si];if(s){s.ai=true;s.in={}}}
 function SNAP(){const r=v=>Math.round(v*10)/10;return JSON.stringify({o:over,W:over?WIN():[],e:EVQ.splice(0),k:G.clock,cs:G.cs,sc:G.sc,
- s:G.sh.map(s=>[r(s.x),r(s.y),Math.round(s.h*1000)/1000,r(s.thr),r(s.v||0),Math.round(s.water),r(s.sink),s.dead?1:0,s.lives,s.gold|0,s.k|0,s.cp,s.lap,s.md.ld?1:0,s.md.mn,s.nest?1:0,s.holes.map(h=>[r(h.x),r(h.y)]),s.cn.map(k=>(k.ld?1:0)+(k.man?2:0)),s.oars.map(o=>o.man?1:0),s.pr.map(p=>[Math.round(p.x),Math.round(p.y),p.job||'',p.carry?1:0]),s.hp|0,s.ammo|0,s.dd|0]),
- gn:G.gn.map(g=>[Math.round(g.x),Math.round(g.y),g.o,g.hp,Math.round(g.a*100)/100,g.cd>2.4/TUNE.fr-.3?1:0]),rg:G.rg.map(r=>[Math.round(r.x),Math.round(r.y),r.o,r.hp,Math.round(r.oil*10)/10]),p:G.pj.map(p=>[r(p.x),r(p.y),Math.round(p.vx),Math.round(p.vy)]),m:G.mn.map(m=>[r(m.x),r(m.y),m.arm>0?1:0,G.sh.indexOf(m.o)]),c:G.ch.map(q=>[r(q.x),r(q.y),q.v|0]),f:G.fx.map(f=>[r(f.x),r(f.y),f.k,r(f.t)])})}
+ s:G.sh.map(s=>[r(s.x),r(s.y),Math.round(s.h*1000)/1000,r(s.thr),r(s.v||0),Math.round(s.water),r(s.sink),s.dead?1:0,s.lives,s.gold|0,s.k|0,s.cp,s.lap,s.md.ld?1:0,s.md.mn,s.nest?1:0,s.holes.map(h=>[r(h.x),r(h.y)]),s.cn.map(k=>(k.ld?1:0)+(k.man?2:0)),s.oars.map(o=>o.man?1:0),s.pr.map(p=>[Math.round(p.x),Math.round(p.y),p.job||'',p.carry?1:0]),s.hp|0,s.ammo|0,s.dd|0,s.pt|0,s.side<0?1:0]),
+ gn:G.gn.map(g=>[Math.round(g.x),Math.round(g.y),g.o,g.hp,Math.round(g.a*100)/100,g.cd>.8/TUNE.fr-.15?1:0]),rg:G.rg.map(r=>[Math.round(r.x),Math.round(r.y),r.o,r.hp,Math.round(r.oil*10)/10]),yd:G.yd.map(y=>[Math.round(y.x),Math.round(y.y),y.o,y.hp,y.k]),p:G.pj.map(p=>[r(p.x),r(p.y),Math.round(p.vx),Math.round(p.vy)]),m:G.mn.map(m=>[r(m.x),r(m.y),m.arm>0?1:0,G.sh.indexOf(m.o)]),c:G.ch.map(q=>[r(q.x),r(q.y),q.v|0]),f:G.fx.map(f=>[r(f.x),r(f.y),f.k,r(f.t)])})}
 var OUTQ=[];function NT(i,t){OUTQ.push([i,t])}
 function AION(si){const s=G.sh[si];if(s){s.ai=false;s.in={}}}
 function WIN(){const A=G.sh.filter(s=>!s.dead);if(cfg.type==4)return[GTOP().i];if(cfg.type==0)return A.map(s=>s.i);
