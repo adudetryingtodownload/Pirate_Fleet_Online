@@ -14,7 +14,7 @@ Rooms, chat, shared settings and the host-started online game. The server runs t
 Free plans sleep when idle, so the first visit can take about a minute to wake up. Any host that runs Node and supports WebSockets works (Fly.io, Railway, a VPS).
 
 ## Checking that the server is up to date
-Open your site address followed by /healthz (for example https://your-app.onrender.com/healthz). It should say `ok server v4 · page v12`. If it shows an older version or just `ok`, or the page is missing, the newest server.js has not been deployed yet. Upload ALL files from the zip (server.js, sim.js, package.json, public/index.html), not just one.
+Open your site address followed by /healthz (for example https://your-app.onrender.com/healthz). It should say `ok server v4 · page v13`. If it shows an older version or just `ok`, or the page is missing, the newest server.js has not been deployed yet. Upload ALL files from the zip (server.js, sim.js, package.json, public/index.html), not just one.
 
 ## Music
 The in-game playlist is the mp3 files in `public/music/` (Rolling Tide and Full Broadside). They play in the lobby and during matches, with a Music button in both places. To add tracks, drop mp3 files there and list them in the `PL` array near the top of the script in `public/index.html`.
