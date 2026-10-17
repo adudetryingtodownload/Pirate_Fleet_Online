@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pirate Fleet</title>
-<meta name="pf-version" content="11">
+<meta name="pf-version" content="12">
 <style>
 :root{--bg:#0d4f7d;--fg:#f6e7b8;--panel:#2e180a;--gold:#d9a83f}
 @media (prefers-color-scheme:dark){:root{--bg:#0a3a5c}}
@@ -44,7 +44,7 @@ button:not(:disabled):hover{background:#6b3f1c}
 <div class="row" id="rG"><label>Gold to bank: <b id="vG">7000</b></label><input type="range" id="sG" min="3000" max="15000" step="1000" value="7000"></div>
 <div class="row"><label>Players in game</label><div id="plist"></div></div>
 <div id="log"></div><div class="cr"><input id="ci" placeholder="Chat with the crew..." maxlength="120"><button id="cs">Send</button></div>
-<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v11</div></div></div>
+<div class="btns"><button id="back">Back</button><button id="mus">🔊 Music on</button><button id="play">Set Sail!</button></div><div style="font-size:11px;opacity:.6;margin-top:8px;text-align:center">Game page v12</div></div></div>
 <div id="tp" hidden></div><div id="gchat" hidden><div id="gl"></div><input id="gi" maxlength="120" placeholder="Enter sends, Esc closes" hidden></div>
 <div id="bar" hidden>
 <button data-k="H">? Controls (H)</button><button data-k="T">💬 Chat (T)</button><button data-k="P">⚙ Tune (P)</button>
@@ -260,7 +260,7 @@ function draw(){c.setTransform(1,0,0,1,0,0);c.fillStyle='#0a3a5c';c.fillRect(0,0
  if(P.wp.length){c.strokeStyle='#fff';c.lineWidth=3/cam.z;c.setLineDash([10/cam.z,8/cam.z]);c.beginPath();c.moveTo(P.x,P.y);for(const w of P.wp)c.lineTo(w.x,w.y);c.stroke();c.setLineDash([]);
   P.wp.forEach((w,i)=>{c.fillStyle='#ffd24a';c.beginPath();c.arc(w.x,w.y,9/Math.min(cam.z,1),0,7);c.fill();c.fillStyle='#000';c.font=`bold ${14/Math.min(cam.z,1)}px sans-serif`;c.fillText(i+1,w.x-4/Math.min(cam.z,1),w.y+5/Math.min(cam.z,1))})}
  for(const s of G.sh){if(s.dead||!vis(s))continue;c.save();c.translate(s.x,s.y);c.rotate(s.h);if(cfg.type==4)gart(s);else{c.scale(K,K);art(s)}c.restore()}
- if(cfg.type==4&&!P.dead){const dx=Math.sin(P.h),dy=-Math.cos(P.h),R=309,ex=P.x+dx*R,ey=P.y+dy*R;c.save();c.strokeStyle=P.ammo>0&&P.gcd<=0?'rgba(255,255,255,.75)':'rgba(255,90,90,.75)';c.lineWidth=2;c.setLineDash([8,8]);c.beginPath();c.moveTo(P.x+dx*22,P.y+dy*22);c.lineTo(ex,ey);c.stroke();c.setLineDash([]);c.beginPath();c.arc(ex,ey,12,0,7);c.moveTo(ex-19,ey);c.lineTo(ex+19,ey);c.moveTo(ex,ey-19);c.lineTo(ex,ey+19);c.stroke();c.restore()}
+ if(cfg.type==4&&!P.dead){const sg=P.side||1,dx=sg*Math.sin(P.h),dy=-sg*Math.cos(P.h),R=309,ex=P.x+dx*R,ey=P.y+dy*R;c.save();c.strokeStyle=P.ammo>0&&P.gcd<=0?'rgba(255,255,255,.75)':'rgba(255,90,90,.75)';c.lineWidth=2;c.setLineDash([8,8]);c.beginPath();c.moveTo(P.x+dx*22,P.y+dy*22);c.lineTo(ex,ey);c.stroke();c.setLineDash([]);c.beginPath();c.arc(ex,ey,12,0,7);c.moveTo(ex-19,ey);c.lineTo(ex+19,ey);c.moveTo(ex,ey-19);c.lineTo(ex,ey+19);c.stroke();c.restore()}
  if(NET)for(const s of G.sh){if(s.dead||!vis(s))continue;c.save();c.translate(s.x,s.y);c.rotate(-cam.r);c.fillStyle='#fff';c.strokeStyle='#000';c.lineWidth=3;c.font='bold '+Math.round(15/Math.max(cam.z,.4))+'px sans-serif';c.textAlign='center';const nm=NM[s.i]||'';c.strokeText(nm,0,-90);c.fillText(nm,0,-90);c.restore()}
  for(const q of G.ch){c.save();c.translate(q.x,q.y+Math.sin(T*2+q.v)*1.5);c.fillStyle='#8a5a2b';c.strokeStyle='#2a1208';c.lineWidth=1.5;c.fillRect(-9,-6,18,12);c.strokeRect(-9,-6,18,12);c.fillStyle='#ffd24a';c.fillRect(-9,-1,18,3);c.beginPath();c.arc(0,0,2,0,7);c.fill();c.strokeStyle='rgba(255,210,74,.5)';c.beginPath();c.arc(0,0,14+Math.sin(T*3)*2,0,7);c.stroke();c.restore()}
  for(const m of G.mn){const dm=Math.hypot(m.x-P.x,m.y-P.y);if(dm>170)continue;c.save();c.globalAlpha=Math.min(1,(170-dm)/50);c.translate(m.x,m.y);c.fillStyle='#1c1c1c';c.strokeStyle=m.arm>0?'#888':'#ff3030';c.lineWidth=1.2;c.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4;c.moveTo(Math.cos(a)*6,Math.sin(a)*6);c.lineTo(Math.cos(a)*10,Math.sin(a)*10)}c.stroke();c.beginPath();c.arc(0,0,6,0,7);c.fill();if(m.arm<=0&&Math.sin(T*8)>0){c.fillStyle='#ff3030';c.beginPath();c.arc(0,0,2.2,0,7);c.fill()}c.restore()}
@@ -273,7 +273,7 @@ function hud(){if(NET){c.fillStyle='rgba(255,255,255,.6)';c.font='11px sans-seri
  c.fillStyle='rgba(30,16,6,.8)';c.fillRect(12,12,300,64);c.strokeStyle='#d9a83f';c.lineWidth=2;c.strokeRect(12,12,300,64);
  const w=cfg.type==4?1-P.hp/HPMAX():P.water/1000;c.fillStyle='#123';c.fillRect(20,20,284,18);c.fillStyle=w>.7?'#e04040':'#3aa0d8';c.fillRect(20,20,284*w,18);
  c.fillStyle='#fff';c.font='13px sans-serif';c.fillText((cfg.type==4?`Hull ${P.hp} / ${HPMAX()}`:`Water ${P.water.toFixed(0)} / 1000 gal`),26,34);
- c.fillText(`${cfg.type==4?'Hull '+P.hp+'/5':'Holes '+P.holes.length}   ${cfg.type==1?'Gold '+(P.gold|0)+'  Time '+Math.max(0,G.clock|0)+'s':cfg.type==2?'Lap '+Math.min(cfg.laps,P.lap+1)+'/'+cfg.laps+'  Gate '+(P.cp+1)+'/4  Place '+place(P)+'/'+G.sh.length+'  Ships '+P.lives:cfg.type==3?'Carrying '+(P.gold|0)+'  Sunk '+(P.k||0):cfg.type==4?'Ammo '+P.ammo+'/30  Rigs '+G.rg.filter(r=>r.o==P.i&&r.hp>0).length+'/5  Guns '+G.gn.filter(g=>g.o==P.i&&g.hp>0).length+'/2  Time '+Math.floor(Math.max(0,G.clock)/60)+':'+('0'+((Math.max(0,G.clock)|0)%60)).slice(-2):'Ships left '+P.lives+'  Rivals '+G.sh.filter(s=>s.i&&!s.dead).length}`,20,62);
+ c.fillText(`${cfg.type==4?'Hull '+P.hp+'/'+HPMAX():'Holes '+P.holes.length}   ${cfg.type==1?'Gold '+(P.gold|0)+'  Time '+Math.max(0,G.clock|0)+'s':cfg.type==2?'Lap '+Math.min(cfg.laps,P.lap+1)+'/'+cfg.laps+'  Gate '+(P.cp+1)+'/4  Place '+place(P)+'/'+G.sh.length+'  Ships '+P.lives:cfg.type==3?'Carrying '+(P.gold|0)+'  Sunk '+(P.k||0):cfg.type==4?'Ammo '+P.ammo+'/30  Rigs '+G.rg.filter(r=>r.o==P.i&&r.hp>0).length+'/5  Guns '+G.gn.filter(g=>g.o==P.i&&g.hp>0).length+'/2  Time '+Math.floor(Math.max(0,G.clock)/60)+':'+('0'+((Math.max(0,G.clock)|0)%60)).slice(-2):'Ships left '+P.lives+'  Rivals '+G.sh.filter(s=>s.i&&!s.dead).length}`,20,62);
  const hint=cfg.type==4?'W/S speed · A/D turn · Space fires · Tab switches cannon side · B oil rig (max 5) · G gunner (7 oil) · Y shipyard (your spawn point, repairs 2 oil per hull) · sail near any rig to collect oil · T chat':'W/S throttle · A/D turn · click pirate, right-click a cannon to man it, L/R/B/N = auto jobs, Tab = swap gun crews to the other side · wheel zoom · drag/arrows look · Space fire · T chat';
  c.font='15px Georgia';c.textAlign='left';c.fillStyle='#f6e7b8';c.strokeStyle='#000';c.lineWidth=4;const hx=330,hw=Math.max(200,W-hx-200);if(showHelp){c.strokeText(hint,hx,28,hw);c.fillText(hint,hx,28,hw)}
  if(tt>0){c.font='16px Georgia';c.strokeText(toast,hx,52,hw);c.fillText(toast,hx,52,hw)}c.textAlign='center';if(P.sink>0){c.font='bold 36px Georgia';c.strokeText('YOUR SHIP IS SINKING!',W/2,H/2);c.fillText('YOUR SHIP IS SINKING!',W/2,H/2)}c.textAlign='left';
@@ -408,7 +408,7 @@ function egg(){const n=Date.now();if(n-eggT<6000||!sfxOn)return;eggT=n;audioInit
  setTimeout(()=>{try{if(typeof speechSynthesis=='undefined')return;const u=new SpeechSynthesisUtterance(cl[1]);u.pitch=cl[2];u.rate=cl[3];u.volume=1;u.lang='en-GB';
   const vs=speechSynthesis.getVoices(),v=vs.find(x=>/^en[-_](GB|AU|IE)/i.test(x.lang)&&/daniel|james|oliver|arthur|male|george/i.test(x.name))||vs.find(x=>/^en/i.test(x.lang));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}},cl[0]=='g'?550:450)}
 let lt=0,gotList=0,SV=0;
-function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v11'},4000)})}
+function watch(){gotList=0;conn(()=>{tx({t:'list'});clearTimeout(lt);lt=setTimeout(()=>{if(!room&&!gotList)$('ns').textContent='No answer from the game server. Make sure BOTH server.js and public/index.html from the latest zip are uploaded to GitHub, and that Render has finished redeploying. You can check by opening your site address followed by /healthz, which should say: ok server v4 · page v12'},4000)})}
 setInterval(()=>{if(!room&&$('lobby').style.display=='flex'&&ws&&ws.readyState==1)tx({t:'list'})},3000);
 function showRooms(l){if(room)return;gotList=1;clearTimeout(lt);$('ns').textContent='';const b=$('rooms');b.replaceChildren();
  if(!l.length){b.textContent='No open games right now. Create one and your friends will see it here.';return}
@@ -475,7 +475,7 @@ function gGun(s){if(s.dead||s.sink>0)return;
  const a0=[0,Math.PI/2,Math.PI,-Math.PI/2][k];s.ammo-=7;G.gn.push({x,y,o:s.i,hp:3,a:a0,a0,cd:2});GN(s,'Gunner posted! (-7 cannonballs)')}
 function gtick(dt){for(const s of G.sh){if(s.gcd>0)s.gcd-=dt;
   const y=G.yd.find(q=>q.o==s.i&&q.hp>0);if(y&&!s.dead&&s.sink<=0&&s.hp<HPMAX()&&s.ammo>=2&&Math.hypot(s.x-y.x,s.y-y.y)<200){s.ry=(s.ry||0)-dt;if(s.ry<=0){s.ry=1;s.hp++;s.ammo-=2;GN(s,'Shipyard repaired 1 hull (-2 oil): '+s.hp+'/'+HPMAX())}}else s.ry=0}
- for(const r of G.rg){if(r.hp>0&&r.oil<5)r.oil=Math.min(5,r.oil+dt/12);if(r.hp<=0||r.oil<1)continue;
+ for(const r of G.rg){if(r.hp>0&&r.oil<5)r.oil=Math.min(5,r.oil+dt/10);if(r.hp<=0||r.oil<1)continue;
   for(const s of G.sh){if(s.dead||s.sink>0||s.ammo>=30||r.oil<1)continue;if(Math.hypot(s.x-r.x,s.y-r.y)<140){const n=Math.min(Math.floor(r.oil),30-s.ammo);s.ammo+=n;s.pt=(s.pt|0)+n;r.oil-=n;GN(s,'Picked up '+n+' oil: +'+n+' cannonballs'+(r.o!=s.i?' (from an enemy rig)':''))}}}
  for(const g of G.gn){if(g.hp<=0)continue;g.cd-=dt;let t=null,bd=1e9;for(const s of G.sh){if(s.i==g.o||s.dead||s.sink>0)continue;const d=Math.hypot(s.x-g.x,s.y-g.y);if(d<bd){bd=d;t=s}}
   if(t&&bd<330){const tv=t.ai?(t.sp||0):(t.v||0),vx=Math.cos(t.h)*tv,vy=Math.sin(t.h)*tv;let tt=bd/520,px=t.x+vx*tt,py=t.y+vy*tt;tt=Math.hypot(px-g.x,py-g.y)/520;px=t.x+vx*tt;py=t.y+vy*tt;

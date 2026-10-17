@@ -305,7 +305,7 @@ function gGun(s){if(s.dead||s.sink>0)return;
  const a0=[0,Math.PI/2,Math.PI,-Math.PI/2][k];s.ammo-=7;G.gn.push({x,y,o:s.i,hp:3,a:a0,a0,cd:2});GN(s,'Gunner posted! (-7 cannonballs)')}
 function gtick(dt){for(const s of G.sh){if(s.gcd>0)s.gcd-=dt;
   const y=G.yd.find(q=>q.o==s.i&&q.hp>0);if(y&&!s.dead&&s.sink<=0&&s.hp<HPMAX()&&s.ammo>=2&&Math.hypot(s.x-y.x,s.y-y.y)<200){s.ry=(s.ry||0)-dt;if(s.ry<=0){s.ry=1;s.hp++;s.ammo-=2;GN(s,'Shipyard repaired 1 hull (-2 oil): '+s.hp+'/'+HPMAX())}}else s.ry=0}
- for(const r of G.rg){if(r.hp>0&&r.oil<5)r.oil=Math.min(5,r.oil+dt/12);if(r.hp<=0||r.oil<1)continue;
+ for(const r of G.rg){if(r.hp>0&&r.oil<5)r.oil=Math.min(5,r.oil+dt/10);if(r.hp<=0||r.oil<1)continue;
   for(const s of G.sh){if(s.dead||s.sink>0||s.ammo>=30||r.oil<1)continue;if(Math.hypot(s.x-r.x,s.y-r.y)<140){const n=Math.min(Math.floor(r.oil),30-s.ammo);s.ammo+=n;s.pt=(s.pt|0)+n;r.oil-=n;GN(s,'Picked up '+n+' oil: +'+n+' cannonballs'+(r.o!=s.i?' (from an enemy rig)':''))}}}
  for(const g of G.gn){if(g.hp<=0)continue;g.cd-=dt;let t=null,bd=1e9;for(const s of G.sh){if(s.i==g.o||s.dead||s.sink>0)continue;const d=Math.hypot(s.x-g.x,s.y-g.y);if(d<bd){bd=d;t=s}}
   if(t&&bd<330){const tv=t.ai?(t.sp||0):(t.v||0),vx=Math.cos(t.h)*tv,vy=Math.sin(t.h)*tv;let tt=bd/520,px=t.x+vx*tt,py=t.y+vy*tt;tt=Math.hypot(px-g.x,py-g.y)/520;px=t.x+vx*tt;py=t.y+vy*tt;
